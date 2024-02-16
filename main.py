@@ -2,16 +2,16 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:24:56
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-15 19:49:23
+LastEditTime: 2024-02-16 00:30:54
 FilePath: /mbp1413-final/main.py
-Description: 
+Description: main script for the project
 I Love IU
 Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved. 
 '''
 from omegaconf import OmegaConf
 import argparse
 import os
-from models.utils import download_dataset, preprocess_dataset
+from models.utils import download_dataset, remap_dataset
 from models.unet import unet
 from models.unetr import unetr
 import torch
@@ -33,13 +33,15 @@ def main() -> None:
     assert os.path.exists(args.cfg), "config file not found"
     cfg = OmegaConf.load(args.cfg)
     download_dataset(cfg)
-    preprocess_dataset(cfg)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # use GPU if available
-    model = modules[cfg.model.name](cfg, args.resume, device)
+    remap_dataset(cfg)
+    # TODO: add data augmentation and dataloader
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
+    model = modules[cfg.model.name](cfg, device, args.resume)
+    
     if args.mode == "train":
-        print(model.model)
-        # model.train()
+        model.train()
     elif args.mode == "test":
+        # TODO: finish test
         model.test()
     else:
         raise ValueError("mode not supported")

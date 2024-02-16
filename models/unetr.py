@@ -2,9 +2,9 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:58
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-15 20:19:36
+LastEditTime: 2024-02-16 00:32:17
 FilePath: /mbp1413-final/models/unetr.py
-Description: 
+Description: transformer-based U-Net model for medical image segmentation
 I Love IU
 Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved. 
 '''

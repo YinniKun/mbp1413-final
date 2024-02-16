@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-15 20:20:00
+LastEditTime: 2024-02-15 22:55:53
 FilePath: /mbp1413-final/models/unet.py
 Description: U-Net model for medical image segmentation
 I Love IU
@@ -32,7 +32,7 @@ class unet(Network):
     def init_model(self) -> None:
         # Create U-Net model
         self.model = monai.networks.nets.UNet(
-            spatial_dim=self.cfg.model.spatial_dim,
+            spatial_dims=self.cfg.model.spatial_dims,
             in_channels=self.cfg.model.in_channels,
             out_channels=self.cfg.model.out_channels,
             channels=self.cfg.model.channels,
