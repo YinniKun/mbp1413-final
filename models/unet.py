@@ -1,29 +1,31 @@
 '''
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
-LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-15 22:55:53
+LastEditors: mikami520 yl.xiao@mail.utoronto.ca
+LastEditTime: 2024-02-17 15:41:06
 FilePath: /mbp1413-final/models/unet.py
 Description: U-Net model for medical image segmentation
 I Love IU
 Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved. 
 '''
-from typing import Mapping
 import monai
 import torch
 import torch.nn as nn
+from monai.data import DataLoader
 from .network import Network
 from typing import Dict, Any
-
 
 class unet(Network):
     def __init__(
         self,
         cfg: Dict[str, Any],
         device: torch.device,
+        tr_loader: DataLoader,
+        val_loader: DataLoader,
+        te_loader: DataLoader,
         resume: bool = False
     ) -> None:
-        super(unet, self).__init__(cfg, device)
+        super(unet, self).__init__(cfg, device, tr_loader, val_loader, te_loader)
         self.init_model()
         self.init_params()
         if resume:

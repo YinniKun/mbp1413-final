@@ -1,8 +1,8 @@
 '''
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:58
-LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-16 00:32:17
+LastEditors: mikami520 yl.xiao@mail.utoronto.ca
+LastEditTime: 2024-02-17 15:42:07
 FilePath: /mbp1413-final/models/unetr.py
 Description: transformer-based U-Net model for medical image segmentation
 I Love IU
@@ -13,6 +13,7 @@ import torch
 import torch.nn as nn
 from .network import Network
 from typing import Dict, Any
+from monai.data import DataLoader
 
 
 class unetr(Network):
@@ -20,9 +21,12 @@ class unetr(Network):
         self, 
         cfg: Dict[str, Any],
         device: torch.device,
+        tr_loader: DataLoader,
+        val_loader: DataLoader,
+        te_loader: DataLoader,
         resume: bool = False
     ) -> None:
-        super(unetr, self).__init__(cfg, device)
+        super(unetr, self).__init__(cfg, device, tr_loader, val_loader, te_loader)
         self.init_model()
         self.init_params()
         if resume:

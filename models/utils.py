@@ -1,14 +1,15 @@
 '''
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:17:54
-LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-16 00:29:43
+LastEditors: mikami520 yl.xiao@mail.utoronto.ca
+LastEditTime: 2024-02-17 15:52:16
 FilePath: /mbp1413-final/models/utils.py
 Description: utility functions for the project
 I Love IU
 Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved. 
 '''
 import monai
+from monai.data import DataLoader
 import torch
 import torch.nn as nn
 import glob
@@ -16,7 +17,7 @@ import os
 import gdown
 import shutil
 import zipfile
-from typing import List, Tuple, Dict, Any, Sequence, Union
+from typing import Tuple, Dict, Any, Sequence, Union
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -74,6 +75,22 @@ def JaccardLoss() -> nn.Module:
     )
     return score
 
+def FullDiceScore() -> nn.Module:
+    score = monai.metrics.DiceHelper(
+        include_background=True,
+        reduction="none"
+    )
+    return score
+
+def FullJaccardLoss() -> nn.Module:
+    score = monai.losses.DiceLoss(
+        include_background=True,
+        to_onehot_y=True,
+        jaccard=True,
+        reduction="none"
+    )
+    return score
+
 def create_dirs() -> None:
     processed_path = os.path.join(ROOT, "datasets/processed")
     train_path = os.path.join(processed_path, "train")
@@ -93,7 +110,7 @@ def create_dirs() -> None:
 
 def remap_dataset(
     cfg: Dict[str, Any]
-) -> None:
+) -> Tuple[DataLoader, DataLoader, DataLoader]:
     
     stage = cfg.dataset.stage
     train_zip = os.path.join(ROOT, "datasets/raw", f"stage{stage}_train.zip")
@@ -125,13 +142,19 @@ def remap_dataset(
         assert not os.path.exists(os.path.join(ROOT, "datasets/raw", f"stage{stage}_test", i, "masks")), "masks folder found"
         for j in sorted(glob.glob(os.path.join(ROOT, "datasets/raw", f"stage{stage}_test", i, "images", "*.png"))):
             shutil.copy(j, test_images_path)
+    
+    return load_dataset(train_images_path, train_masks_path, test_images_path, test_masks_path)
 
 
 def load_dataset(
     train_images_path: str,
-    test_images_path: str
-) -> None:
-    pass
+    train_masks_path: str,
+    test_images_path: str,
+    test_masks_path: str
+) -> Tuple[DataLoader, DataLoader, DataLoader]:
+    tr_loader, val_loader, te_loader = None, None, None
+    
+    return tr_loader, val_loader, te_loader
 
 def plot_progress(
     save_dir: str, 

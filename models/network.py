@@ -1,9 +1,9 @@
 '''
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
-LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-15 22:55:53
-FilePath: /mbp1413-final/models/unet.py
+LastEditors: mikami520 yl.xiao@mail.utoronto.ca
+LastEditTime: 2024-02-17 15:52:03
+FilePath: /mbp1413-final/models/network.py
 Description: base network class for the project
 I Love IU
 Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved. 
@@ -11,7 +11,7 @@ Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved.
 
 import torch
 import torch.nn as nn
-from .utils import DFLoss, DiceScore, JaccardLoss, plot_progress
+from .utils import DFLoss, DiceScore, JaccardLoss, plot_progress, FullDiceScore, FullJaccardLoss
 from typing import Dict, Any, Tuple
 import monai
 from monai.data import DataLoader
@@ -25,24 +25,26 @@ class Network(nn.Module):
         self,
         cfg: Dict[str, Any],
         device: torch.device,
+        tr_loader: DataLoader,
+        val_loader: DataLoader,
+        te_loader: DataLoader
     ) -> None:
         super(Network, self).__init__()
         self.cfg = cfg
         self.device = device
+        self.tr_loader = tr_loader
+        self.val_loader = val_loader
+        self.te_loader = te_loader
 
-    def init_model(self):
+    def init_model(self) -> None:
         pass
 
-    def train(
-        self,
-        tr_loader: DataLoader,
-        val_loader: DataLoader
-    ) -> None:
+    def train(self) -> None:
         for epoch in range(self.start_epoch, self.max_epoch):
             self.epoch = epoch
             self.model.train()
             tr_loss = []
-            with tqdm(tr_loader, unit="batch") as tepoch:
+            with tqdm(self.tr_loader, unit="batch") as tepoch:
                 for batch in tepoch:
                     tepoch.set_description(
                         f"Epoch {epoch+1}/{self.cfg.training.epochs} Training")
@@ -64,7 +66,7 @@ class Network(nn.Module):
             val_iou = []
             self.model.eval()
             with torch.no_grad():
-                with tqdm(val_loader, unit='batch') as tepoch:
+                with tqdm(self.val_loader, unit='batch') as tepoch:
                     for batch in tepoch:
                         tepoch.set_description(
                             f"Epoch {epoch+1}/{self.cfg.training.epochs} Validation")
@@ -96,7 +98,31 @@ class Network(nn.Module):
                       self.train_losses, self.valid_losses, self.dscs, self.ious, "loss")
 
     def test(self) -> None:
-        pass
+        self.load_checkpoint(best=True)
+        self.model.eval()
+        dscs = []
+        ious = []
+        with torch.no_grad():
+            with tqdm(self.te_loader, unit='batch') as tepoch:
+                for batch in tepoch:
+                    tepoch.set_description("Model Inference")
+                    x, y = batch["image"].to(
+                        self.device), batch["label"].to(self.device)
+                    y_pred = self.model(x)
+                    y_pred_logits = torch.argmax(torch.softmax(
+                        y_pred, dim=1), dim=1, keep_dim=True)
+                    y_pred_class = monai.networks.utils.one_hot(
+                        y_pred_logits, num_classes=self.cfg.model.out_channels)
+                    dice_score, iou_score = self.full_score(y_pred_class, y)
+                    dscs.append(dice_score.item())
+                    ious.append(iou_score.item())
+                    tepoch.set_postfix(dice=dice_score.item(), iou=iou_score.item())
+
+        avg_dsc = np.mean(dscs, axis=0)
+        avg_iou = np.mean(ious, axis=0)
+        print()
+        
+        
 
     def loss(
         self,
@@ -111,12 +137,21 @@ class Network(nn.Module):
         y: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         return self.dice_metric(y_pred, y), 1-self.jaccard_loss(y_pred, y)
+    
+    def full_score(
+        self,
+        y_pred: torch.Tensor,
+        y: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        return self.full_dice_metric(y_pred, y).reshape(-1, ), 1-(self.full_jaccard_loss(y_pred, y).reshape(-1, ))
 
     def init_params(self) -> None:
         self.loss_metric = DFLoss()
         self.lr = self.cfg.training.lr
         self.dice_metric = DiceScore()
         self.jaccard_loss = JaccardLoss()
+        self.full_dice_metric = FullDiceScore()
+        self.full_jaccard_loss = FullJaccardLoss()
         self.optimizer = getattr(torch.optim, self.cfg.training.optimizer)(
             self.model.parameters(), lr=self.lr)
         self.train_losses, self.valid_losses, self.dscs, self.ious = [], [], [], []
@@ -125,9 +160,16 @@ class Network(nn.Module):
         self.valid_period = self.cfg.training.val_period
         self.start_epoch, self.epoch = 0, 0
 
-    def load_checkpoint(self) -> None:
+    def load_checkpoint(
+        self,
+        best: bool = False
+    ) -> None:
         ckpt = torch.load(os.path.join(self.cfg.training.save_dir,
                           'weights/last_ckpt.pth'), map_location=self.device)
+        if best:
+            ckpt = torch.load(os.path.join(self.cfg.training.save_dir,
+                          'weights/best_ckpt.pth'), map_location=self.device)
+        
         self.optimizer.load_state_dict(ckpt['optimizer'])
         self.model.load_state_dict(ckpt['weights'])
         self.best_valid_loss = ckpt['best_valid_loss']
