@@ -35,7 +35,10 @@ def download_dataset(cfg: Dict[str, Any]) -> None:
     os.remove("dataset.zip")
 
 
-def make_if_dont_exist(folder_path, overwrite=False):
+def make_if_dont_exist(
+    folder_path: str,
+    overwrite: bool = False
+) -> None:
     if os.path.exists(folder_path):
         if not overwrite:
             pass
@@ -95,7 +98,7 @@ def FullJaccardLoss() -> nn.Module:
     )
     return score
 
-def create_dirs() -> None:
+def create_dirs() -> Tuple[str, str, str, str]:
     mapped_path = os.path.join(ROOT, "datasets/mapped")
     train_path = os.path.join(mapped_path, "train")
     test_path = os.path.join(mapped_path, "test")
@@ -156,6 +159,7 @@ def load_dataset(
     test_images_path: str,
     test_masks_path: str
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
+    # TODO: need to process and load dataset
     tr_loader, val_loader, te_loader = None, None, None
     
     return tr_loader, val_loader, te_loader
