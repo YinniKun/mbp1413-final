@@ -1,0 +1,39 @@
+experiment: 
+  name: "Automated Nuclei Detection and Segmentation"
+  description: "Evaluating Performance Between Variation of UNet Models for Nuclei Detection and Segmentation"
+  date: "2024-02-15"
+
+dataset:
+  name: "Nuclei Dataset"
+  description: "A dataset of nuclei images for training and testing"
+  url: "https://drive.google.com/file/d/1M-rJLBhEln1kaTl4d_ym26otEHeAXDIB/view?usp=drive_link"
+  stage: 1
+
+model:
+  name: "unet"
+  spatial_dims: 2
+  in_channels: 1
+  out_channels: 2
+  image_size: [256, 256] ## Image size for the model, either List or Tuple is accepted (256, 256)
+  channels: [16, 32, 64, 128, 256] ## Number of channels in the encoder, either List or Tuple is accepted (16, 32, 64, 128, 256)
+  strides: [2, 2, 2, 2] ## Strides in the encoder, either List or Tuple is accepted (2, 2, 2, 2)
+  kernel_size: 3
+  activation: "ReLU"
+  normalization: "Batch"
+  dropout: 0.5
+  num_res_units: 2
+
+training:
+  epochs: 100
+  batch_size: 16
+  lr: 0.001
+  optimizer: "Adam"
+  loss: "DiceFocalLoss"
+  metrics: ["Dice", "IoU"]
+  early_stopping: True
+  save_dir: ""
+  val_period: 5
+
+inference:
+  model_dir: ""
+  predict_dir: ""
