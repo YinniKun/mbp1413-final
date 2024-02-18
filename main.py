@@ -1,8 +1,8 @@
 '''
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:24:56
-LastEditors: mikami520 yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-17 15:37:54
+LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
+LastEditTime: 2024-02-17 20:12:53
 FilePath: /mbp1413-final/main.py
 Description: main script for the project
 I Love IU
@@ -11,7 +11,7 @@ Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved.
 from omegaconf import OmegaConf
 import argparse
 import os
-from models.utils import download_dataset, remap_dataset
+from models.utils import download_dataset, map_dataset
 from models.unet import unet
 from models.unetr import unetr
 import torch
@@ -36,15 +36,21 @@ def main() -> None:
     if args.download:
         download_dataset(cfg)
     # TODO: add data augmentation and dataloader
-    tr_loader, val_loader, te_loader = remap_dataset(cfg)
+    tr_loader, val_loader, te_loader = map_dataset(cfg)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
-    model = modules[cfg.model.name](cfg, device, args.resume, tr_loader, val_loader, te_loader)
+    model = modules[cfg.model.name](cfg, device, tr_loader, val_loader, te_loader)
     
     if args.mode == "train":
-        # model.train()
-        pass
+        if args.resume:
+            model.load_checkpoint(mode="last")
+        else:
+            model.init_training_dir()
+        
+        model.train()
+
     elif args.mode == "test":
-        # TODO: finish test
+        # Done: finish test
+        model.init_inference_dir()
         model.test()
     else:
         raise ValueError("mode not supported")

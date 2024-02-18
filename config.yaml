@@ -31,5 +31,9 @@ training:
   loss: "DiceFocalLoss"
   metrics: ["Dice", "IoU"]
   early_stopping: True
-  save_dir: "./results"
+  save_dir: ""
   val_period: 5
+
+inference:
+  model_dir: ""
+  predict_dir: ""

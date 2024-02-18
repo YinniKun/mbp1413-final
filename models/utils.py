@@ -1,8 +1,8 @@
 '''
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:17:54
-LastEditors: mikami520 yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-17 15:52:16
+LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
+LastEditTime: 2024-02-17 20:11:56
 FilePath: /mbp1413-final/models/utils.py
 Description: utility functions for the project
 I Love IU
@@ -23,8 +23,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
+from pathlib import Path
 
-ROOT = "."
+ROOT = Path(os.path.dirname(os.path.realpath(__file__))).parent
 
 def download_dataset(cfg: Dict[str, Any]) -> None:
     assert cfg.dataset.url is not None or cfg.dataset.url != "", "Please provide the URL of the dataset"
@@ -34,10 +35,13 @@ def download_dataset(cfg: Dict[str, Any]) -> None:
     os.remove("dataset.zip")
 
 
-def make_if_dont_exist(folder_path: str) -> None:
+def make_if_dont_exist(folder_path, overwrite=False):
     if os.path.exists(folder_path):
-        shutil.rmtree(folder_path, ignore_errors=True)
-        os.makedirs(folder_path)
+        if not overwrite:
+            pass
+        else:
+            shutil.rmtree(folder_path, ignore_errors = True)
+            os.makedirs(folder_path)
     else:
         os.makedirs(folder_path)
 
@@ -92,23 +96,23 @@ def FullJaccardLoss() -> nn.Module:
     return score
 
 def create_dirs() -> None:
-    processed_path = os.path.join(ROOT, "datasets/processed")
-    train_path = os.path.join(processed_path, "train")
-    test_path = os.path.join(processed_path, "test")
+    mapped_path = os.path.join(ROOT, "datasets/mapped")
+    train_path = os.path.join(mapped_path, "train")
+    test_path = os.path.join(mapped_path, "test")
     train_images_path = os.path.join(train_path, "images")
     train_masks_path = os.path.join(train_path, "masks")
     test_images_path = os.path.join(test_path, "images")
     test_masks_path = os.path.join(test_path, "masks")
-    make_if_dont_exist(processed_path)
-    make_if_dont_exist(train_path)
-    make_if_dont_exist(test_path)
-    make_if_dont_exist(train_images_path)
-    make_if_dont_exist(train_masks_path)
-    make_if_dont_exist(test_images_path)
-    make_if_dont_exist(test_masks_path)
+    make_if_dont_exist(mapped_path, overwrite=True)
+    make_if_dont_exist(train_path, overwrite=True)
+    make_if_dont_exist(test_path, overwrite=True)
+    make_if_dont_exist(train_images_path, overwrite=True)
+    make_if_dont_exist(train_masks_path, overwrite=True)
+    make_if_dont_exist(test_images_path, overwrite=True)
+    make_if_dont_exist(test_masks_path, overwrite=True)
     return train_images_path, train_masks_path, test_images_path, test_masks_path
 
-def remap_dataset(
+def map_dataset(
     cfg: Dict[str, Any]
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     
@@ -120,8 +124,8 @@ def remap_dataset(
     
     train_images_path, train_masks_path, test_images_path, test_masks_path = create_dirs()
     for i in os.listdir(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train")):
-        assert os.path.exists(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "images")), "images folder not found"
-        assert os.path.exists(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "masks")), "masks folder not found"
+        assert os.path.exists(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "images")), "Images folder not found"
+        assert os.path.exists(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "masks")), "Masks folder not found"
         for j in sorted(glob.glob(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "images", "*.png"))):
             shutil.copy(j, train_images_path)
         
@@ -138,8 +142,8 @@ def remap_dataset(
         sitk.WriteImage(sitk.GetImageFromArray(combined_label), os.path.join(train_masks_path, i + ".png"))
     
     for i in os.listdir(os.path.join(ROOT, "datasets/raw", f"stage{stage}_test")):
-        assert os.path.exists(os.path.join(ROOT, "datasets/raw", f"stage{stage}_test", i, "images")), "images folder not found"
-        assert not os.path.exists(os.path.join(ROOT, "datasets/raw", f"stage{stage}_test", i, "masks")), "masks folder found"
+        assert os.path.exists(os.path.join(ROOT, "datasets/raw", f"stage{stage}_test", i, "images")), "Images folder not found"
+        assert not os.path.exists(os.path.join(ROOT, "datasets/raw", f"stage{stage}_test", i, "masks")), "Masks folder found"
         for j in sorted(glob.glob(os.path.join(ROOT, "datasets/raw", f"stage{stage}_test", i, "images", "*.png"))):
             shutil.copy(j, test_images_path)
     

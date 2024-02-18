@@ -1,8 +1,8 @@
 '''
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
-LastEditors: mikami520 yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-17 15:41:06
+LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
+LastEditTime: 2024-02-17 19:03:01
 FilePath: /mbp1413-final/models/unet.py
 Description: U-Net model for medical image segmentation
 I Love IU
@@ -14,6 +14,7 @@ import torch.nn as nn
 from monai.data import DataLoader
 from .network import Network
 from typing import Dict, Any
+import os
 
 class unet(Network):
     def __init__(
@@ -22,15 +23,12 @@ class unet(Network):
         device: torch.device,
         tr_loader: DataLoader,
         val_loader: DataLoader,
-        te_loader: DataLoader,
-        resume: bool = False
+        te_loader: DataLoader
     ) -> None:
         super(unet, self).__init__(cfg, device, tr_loader, val_loader, te_loader)
         self.init_model()
         self.init_params()
-        if resume:
-            self.load_checkpoint()
-    
+        
     def init_model(self) -> None:
         # Create U-Net model
         self.model = monai.networks.nets.UNet(
