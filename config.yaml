@@ -33,6 +33,7 @@ training:
   early_stopping: True
   save_dir: ""
   val_period: 5
+  num_workers: 4
 
 inference:
   model_dir: ""
