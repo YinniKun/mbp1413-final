@@ -17,7 +17,7 @@ conda activate monai
 ```python
 python main.py
 -c /path/to/config/yaml/file
--m running mode. default is "train", can be "train" or "test"
--d download dataset, action wont be triggerd if not using flag
--r resume training process, action wont be triggerd if not using flag
+-m mode. # default is "train", can be "train" or "test"
+-d #flag for downloading dataset. Action won't be triggered if not using this flag
+-r #flag for resuming the training process. Action won't be triggered if not using this flag
 ```
