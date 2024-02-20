@@ -149,15 +149,15 @@ def map_dataset(
         for j in sorted(glob.glob(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "images", "*.png"))):
             shutil.copy(j, train_images_path)
         
-        m = 1
+        m = 0
         for k in sorted(glob.glob(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "masks", "*.png"))):
+            m += 1
             mask = sitk.GetArrayFromImage(sitk.ReadImage(k))
             mask[mask != 0] = 255
             if m == 1:
                 combined_label = mask
-                m += 1
-            else:
-                combined_label += mask
+                continue
+            combined_label += mask
             
         sitk.WriteImage(sitk.GetImageFromArray(combined_label), os.path.join(train_masks_path, i + ".png"))
     
