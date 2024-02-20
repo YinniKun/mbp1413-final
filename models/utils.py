@@ -190,7 +190,7 @@ def load_dataset(
     train_transforms = Compose(
         [
         # Load image and label data
-        LoadImaged(keys=["image", "label"]), #pn files loaded as PIL image
+        LoadImaged(keys=["image", "label"]), #png files loaded as PIL image
         # Ensure channel is the first dimension
         EnsureChannelFirstd(keys=["image", "label"]),
         # Convert images and masks to grey scale
@@ -213,12 +213,12 @@ def load_dataset(
         Orientationd(keys=["image", "label"], axcodes="RAS"),
         # Adjust the spacing of the image and label using specified pixel dimensions and interpolation modes
         # this helps with data integration
-        Spacingd(keys=["image", "label"], pixdim=(1.5, 1.5, 2.0), mode=("bilinear", "nearest")),
+        Spacingd(keys=["image", "label"], pixdim=(1.5, 1.5), mode=("bilinear", "nearest")),
         # Randomly crop regions with positive and negative labels to create training samples
         RandCropByPosNegLabeld(
             keys=["image", "label"],
             label_key="label",
-            spatial_size=(96, 96, 96), # this will be the size of our cropped images to be inputted
+            spatial_size=(96, 96), # this will be the size of our cropped images to be inputted
             pos=1,
             neg=1,
             num_samples=4,
@@ -229,9 +229,9 @@ def load_dataset(
         RandAffined(
             keys=['image', 'label'],
             mode=('bilinear', 'nearest'),
-            prob=1.0, spatial_size=(96, 96, 96),
+            prob=1.0, spatial_size=(96, 96),
             rotate_range=(0, 0, np.pi/15),
-            scale_range=(0.1, 0.1, 0.1))
+            scale_range=(0.1, 0.1))
         ]
     )
 
@@ -260,7 +260,7 @@ def load_dataset(
             # Adjust the orientation of the image and label using RAS (Right, Anterior, Superior) axcodes
             Orientationd(keys=["image", "label"], axcodes="RAS"),
             # Adjust the spacing of the image and label using specified pixel dimensions and interpolation modes
-            Spacingd(keys=["image", "label"], pixdim=(1.5, 1.5, 2.0), mode=("bilinear", "nearest")),
+            Spacingd(keys=["image", "label"], pixdim=(1.5, 1.5), mode=("bilinear", "nearest")),
         ]
     )
 
