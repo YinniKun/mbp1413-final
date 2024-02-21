@@ -1,13 +1,3 @@
-<!--
- * @Author: Chris Xiao yl.xiao@mail.utoronto.ca
- * @Date: 2024-02-21 02:41:56
- * @LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
- * @LastEditTime: 2024-02-21 02:55:01
- * @FilePath: /mbp1413-final/README.md
- * @Description: 
- * I Love IU
- * Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved. 
--->
 # mbp1413-final
 Final project for MBP1413 Winter 2024, by Richard, Sylvia, and Chris. 
 

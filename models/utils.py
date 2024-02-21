@@ -2,25 +2,13 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:17:54
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-<<<<<<< HEAD
-LastEditTime: 2024-02-21 02:51:58
-=======
-<<<<<<< HEAD
 LastEditTime: 2024-02-21 02:04:52
-=======
-LastEditTime: 2024-02-17 20:11:56
->>>>>>> main
->>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
 FilePath: /mbp1413-final/models/utils.py
 Description: utility functions for the project
 I Love IU
 Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved. 
 '''
 import monai
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
 from monai.data import DataLoader, CacheDataset
 from monai.transforms import (
     EnsureChannelFirstd,
@@ -29,12 +17,6 @@ from monai.transforms import (
     ScaleIntensityRanged,
     Resized,
 )
-<<<<<<< HEAD
-=======
-=======
-from monai.data import DataLoader
->>>>>>> main
->>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
 import torch
 import torch.nn as nn
 import glob
@@ -49,14 +31,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
 from pathlib import Path
-<<<<<<< HEAD
 from omegaconf import OmegaConf
-=======
-<<<<<<< HEAD
-from omegaconf import OmegaConf
-=======
->>>>>>> main
->>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
 
 ROOT = Path(os.path.dirname(os.path.realpath(__file__))).parent
 
@@ -93,15 +68,7 @@ def unzip_dataset(
 def DFLoss() -> nn.Module:
     loss = monai.losses.GeneralizedDiceFocalLoss(
         include_background=True,
-<<<<<<< HEAD
         to_onehot_y=True,
-=======
-<<<<<<< HEAD
-        to_onehot_y=True,
-=======
-        to_onehot_y=True,  # Added a comma here
->>>>>>> main
->>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
         softmax=True,
         reduction="mean"
     )
@@ -173,40 +140,16 @@ def map_dataset(
         for j in sorted(glob.glob(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "images", "*.png"))):
             shutil.copy(j, train_images_path)
         
-<<<<<<< HEAD
         m = 0
         for k in sorted(glob.glob(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "masks", "*.png"))):
             m += 1
-=======
-<<<<<<< HEAD
-        m = 0
-        for k in sorted(glob.glob(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "masks", "*.png"))):
-            m += 1
-=======
-        m = 1
-        for k in sorted(glob.glob(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "masks", "*.png"))):
->>>>>>> main
->>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
             mask = sitk.GetArrayFromImage(sitk.ReadImage(k))
             mask[mask != 0] = 255
             if m == 1:
                 combined_label = mask
-<<<<<<< HEAD
                 continue
             combined_label += mask
             
-=======
-<<<<<<< HEAD
-                continue
-            combined_label += mask
-            
-=======
-                pass
-            combined_label += mask
-            m += 1
-        
->>>>>>> main
->>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
         sitk.WriteImage(sitk.GetImageFromArray(combined_label), os.path.join(train_masks_path, i + ".png"))
     
     for i in os.listdir(os.path.join(ROOT, "datasets/raw", f"stage{stage}_test")):
@@ -215,88 +158,15 @@ def map_dataset(
         for j in sorted(glob.glob(os.path.join(ROOT, "datasets/raw", f"stage{stage}_test", i, "images", "*.png"))):
             shutil.copy(j, test_images_path)
     
-<<<<<<< HEAD
     return load_dataset(train_images_path, train_masks_path, test_images_path, test_masks_path, cfg)
 
 def convert_to_greyscale(image):
     return image.convert('L')
-=======
-<<<<<<< HEAD
-    return load_dataset(train_images_path, train_masks_path, test_images_path, test_masks_path, cfg)
-
-def convert_to_greyscale(image):
-    return image.convert('L')
-=======
-    return load_dataset(train_images_path, train_masks_path, test_images_path, test_masks_path)
-
->>>>>>> main
->>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
 
 def load_dataset(
     train_images_path: str,
     train_masks_path: str,
     test_images_path: str,
-<<<<<<< HEAD
-    test_masks_path: str,
-    cfg: OmegaConf
-) -> Tuple[DataLoader, DataLoader, DataLoader]:
-    # create a dic with directory of images and masks
-    train_files = [{"image": img, "label": mask} for img, mask in 
-                   zip(sorted(glob.glob(os.path.join(train_images_path, "*.png"))), 
-                       sorted(glob.glob(os.path.join(train_masks_path, "*.png"))))]
-    test_files = [{"image": img, "label": mask} for img, mask in 
-                  zip(sorted(glob.glob(os.path.join(test_images_path, "*.png"))), 
-                      sorted(glob.glob(os.path.join(test_masks_path, "*.png"))))]
-    # define transforms
-    transforms = Compose(
-        [
-            # Load image and label data
-            LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader'), #png files loaded as PIL image
-            # Ensure channel is the first dimension
-            EnsureChannelFirstd(keys=["image", "label"]),
-            # resize images and masks with scaling
-            Resized(keys=["image", "label"], spatial_size=(512, 512), mode=("linear", "nearest")),
-            # Scale intensity values of the image within the specified range
-            ScaleIntensityRanged(
-                keys=["image"],
-                a_min=-57,
-                a_max=164,
-                b_min=0.0,
-                b_max=1.0,
-                clip=True,
-            )
-        ]
-    )
-
-    # load datasets
-    tran_size = int(0.8 * len(train_files))
-    val_size = len(train_files) - tran_size
-    train_data, val_data = torch.utils.data.random_split(train_files, [tran_size, val_size])
-    print(f"Training data size: {len(train_data)}")
-    print(f"Validation data size: {len(val_data)}")
-
-    
-    
-    tr_loader = DataLoader(
-        CacheDataset(train_data, transform=transforms, cache_num=16, hash_as_key=True),
-        batch_size=cfg.training.batch_size,
-        shuffle=True,
-        num_workers=cfg.training.num_workers
-    )
-    val_loader = DataLoader(
-        CacheDataset(val_data, transform=transforms, cache_num=16, hash_as_key=True),
-        batch_size=cfg.training.batch_size,
-        shuffle=False,
-        num_workers=cfg.training.num_workers
-    )
-    te_loader = DataLoader(
-        CacheDataset(test_files, transform=transforms, cache_num=16, hash_as_key=True),
-        batch_size=cfg.training.batch_size,
-        shuffle=False,
-        num_workers=cfg.training.num_workers
-    )
-=======
-<<<<<<< HEAD
     test_masks_path: str,
     cfg: OmegaConf
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
@@ -355,13 +225,6 @@ def load_dataset(
         shuffle=False,
         num_workers=cfg.training.num_workers
     )
-=======
-    test_masks_path: str
-) -> Tuple[DataLoader, DataLoader, DataLoader]:
-    # TODO: need to process and load dataset
-    tr_loader, val_loader, te_loader = None, None, None
->>>>>>> main
->>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
     
     return tr_loader, val_loader, te_loader
 
