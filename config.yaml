@@ -12,6 +12,17 @@ dataset:
 model:
   name: "unet"
   spatial_dims: 2
+<<<<<<< HEAD
+  in_channels: 4
+  out_channels: 2
+  image_size: [512, 512] ## Image size for the model, either List or Tuple is accepted (256, 256)
+  channels: [16, 32, 64, 128, 256, 512] ## Number of channels in the encoder, either List or Tuple is accepted (16, 32, 64, 128, 256)
+  strides: [2, 2, 2, 2, 2] ## Strides in the encoder, either List or Tuple is accepted (2, 2, 2, 2)
+  kernel_size: 3
+  activation: "LeakyReLU"
+  normalization: "Batch"
+  dropout: 0.2
+=======
   in_channels: 1
   out_channels: 2
   image_size: [256, 256] ## Image size for the model, either List or Tuple is accepted (256, 256)
@@ -21,11 +32,16 @@ model:
   activation: "ReLU"
   normalization: "Batch"
   dropout: 0.5
+>>>>>>> main
   num_res_units: 2
 
 training:
   epochs: 100
+<<<<<<< HEAD
+  batch_size: 10
+=======
   batch_size: 16
+>>>>>>> main
   lr: 0.001
   optimizer: "Adam"
   loss: "DiceFocalLoss"
@@ -33,6 +49,10 @@ training:
   early_stopping: True
   save_dir: ""
   val_period: 5
+<<<<<<< HEAD
+  num_workers: 4
+=======
+>>>>>>> main
 
 inference:
   model_dir: ""

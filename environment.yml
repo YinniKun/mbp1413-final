@@ -6,6 +6,10 @@ channels:
   - defaults
 dependencies:
   - python=3.9
+<<<<<<< HEAD
+  - pip
+=======
+>>>>>>> main
   - pip:
       - antlr4-python3-runtime==4.9.3
       - asttokens==2.4.1
