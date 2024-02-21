@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:24:56
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-21 03:04:18
+LastEditTime: 2024-02-21 17:45:07
 FilePath: /mbp1413-final/main.py
 Description: main script for the project
 I Love IU
@@ -11,10 +11,13 @@ Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved.
 from omegaconf import OmegaConf
 import argparse
 import os
-from models.utils import download_dataset, map_dataset
+from models.utils import download_dataset, load_dataset
 from models.unet import unet
 from models.unetr import unetr
 import torch
+from pathlib import Path
+
+ROOT = Path(os.path.dirname(os.path.realpath(__file__)))
 
 modules = {
     "unet": unet,
@@ -35,12 +38,13 @@ def main() -> None:
     cfg = OmegaConf.load(args.cfg)
     if args.download:
         download_dataset(cfg)
-    # Done: add data augmentation and dataloader
-    tr_loader, val_loader, te_loader = map_dataset(cfg)
+
+    train_path = os.path.join(ROOT, "datasets", "train")
+    test_path = os.path.join(ROOT, "datasets", "test")
+    tr_loader, val_loader, te_loader = load_dataset(train_path, test_path, cfg)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
     # device = torch.device("cpu")
     model = modules[cfg.model.name](cfg, device, tr_loader, val_loader, te_loader)
-    
     if args.mode == "train":
         if args.resume:
             model.load_checkpoint(mode="last")
@@ -50,7 +54,6 @@ def main() -> None:
         model.train()
 
     elif args.mode == "test":
-        # TODO: find test masks
         model.init_inference_dir()
         model.test()
     else:

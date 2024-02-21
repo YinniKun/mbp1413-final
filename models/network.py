@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-21 03:03:28
+LastEditTime: 2024-02-21 17:28:46
 FilePath: /mbp1413-final/models/network.py
 Description: base network class for the project
 I Love IU
@@ -19,7 +19,7 @@ from tqdm import tqdm
 import numpy as np
 import os
 import json
-import SimpleITK as sitk
+from PIL import Image
 from pathlib import Path
 
 ROOT = Path(os.path.dirname(os.path.realpath(__file__))).parent
@@ -150,11 +150,8 @@ class Network(nn.Module):
                     y_pred_label = torch.argmax(torch.softmax(y_pred, dim=1), dim=1, keepdim=True)
                     y_pred_label_numpy = y_pred_label.detach().cpu().numpy().astype(np.uint8)[0,0,...]
                     y_pred_label_numpy[y_pred_label_numpy != 0] = 255
-                    sitk_seg = sitk.GetImageFromArray(y_pred_label_numpy)
-                    sitk_seg.SetDirection(batch["seg_meta_dict"]["original_affine"][0, :3, :3].detach().cpu().numpy().flatten().tolist())
-                    sitk_seg.SetOrigin(batch["seg_meta_dict"]["original_affine"][0, :3, 3].detach().cpu().numpy().tolist())
-                    sitk_seg.SetSpacing(batch["seg_meta_dict"]["pixdim"][0, 1:4].detach().cpu().numpy().tolist())
-                    sitk.WriteImage(sitk_seg, os.path.join(self.inference_model_dir, filename))
+                    seg = Image.fromarray(y_pred_label_numpy)
+                    seg.save(os.path.join(self.inference_model_dir, filename))
                     y_pred_class = monai.networks.utils.one_hot(
                         y_pred_label, num_classes=self.cfg.model.out_channels)
                     dice_score, iou_score = self.full_score(y_pred_class, y)

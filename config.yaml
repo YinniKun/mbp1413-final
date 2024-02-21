@@ -6,7 +6,7 @@ experiment:
 dataset:
   name: "Nuclei Dataset"
   description: "A dataset of nuclei images for training and testing"
-  url: "https://drive.google.com/file/d/1M-rJLBhEln1kaTl4d_ym26otEHeAXDIB/view?usp=drive_link"
+  url: "https://drive.google.com/file/d/1R6yO4DtEmsLRtkCroTeSNeRE78wZSfWi/view?usp=drive_link"
   stage: 1
 
 model:
@@ -21,18 +21,18 @@ model:
   activation: "LeakyReLU"
   normalization: "Batch"
   dropout: 0.2
-  num_res_units: 2
+  num_res_units: 5
 
 training:
-  epochs: 100
-  batch_size: 10
+  epochs: 200
+  batch_size: 20
   lr: 0.001
   optimizer: "Adam"
   loss: "DiceFocalLoss"
   metrics: ["Dice", "IoU"]
   save_dir: ""
   val_period: 5
-  num_workers: 4
+  num_workers: 8
 
 inference:
   model_dir: ""

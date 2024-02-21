@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:17:54
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-21 03:02:23
+LastEditTime: 2024-02-21 17:46:11
 FilePath: /mbp1413-final/models/utils.py
 Description: utility functions for the project
 I Love IU
@@ -29,7 +29,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-import SimpleITK as sitk
+from PIL import Image
 from pathlib import Path
 from omegaconf import OmegaConf
 
@@ -39,7 +39,7 @@ def download_dataset(cfg: Dict[str, Any]) -> None:
     assert cfg.dataset.url is not None or cfg.dataset.url != "", "Please provide the URL of the dataset"
     shutil.rmtree(os.path.join(ROOT, 'datasets'), ignore_errors=True)
     gdown.download(url=cfg.dataset.url, output="dataset.zip", quiet=False, fuzzy=True)
-    unzip_dataset("dataset.zip", os.path.join(ROOT, "datasets/raw"))
+    unzip_dataset("dataset.zip", ROOT)
     os.remove("dataset.zip")
 
 
@@ -106,77 +106,19 @@ def FullJaccardLoss() -> nn.Module:
     )
     return score
 
-def create_dirs() -> Tuple[str, str, str, str]:
-    mapped_path = os.path.join(ROOT, "datasets/mapped")
-    train_path = os.path.join(mapped_path, "train")
-    test_path = os.path.join(mapped_path, "test")
-    train_images_path = os.path.join(train_path, "images")
-    train_masks_path = os.path.join(train_path, "masks")
-    test_images_path = os.path.join(test_path, "images")
-    test_masks_path = os.path.join(test_path, "masks")
-    make_if_dont_exist(mapped_path, overwrite=True)
-    make_if_dont_exist(train_path, overwrite=True)
-    make_if_dont_exist(test_path, overwrite=True)
-    make_if_dont_exist(train_images_path, overwrite=True)
-    make_if_dont_exist(train_masks_path, overwrite=True)
-    make_if_dont_exist(test_images_path, overwrite=True)
-    make_if_dont_exist(test_masks_path, overwrite=True)
-    return train_images_path, train_masks_path, test_images_path, test_masks_path
-
-def map_dataset(
-    cfg: Dict[str, Any]
-) -> Tuple[DataLoader, DataLoader, DataLoader]:
-    
-    stage = cfg.dataset.stage
-    train_zip = os.path.join(ROOT, "datasets/raw", f"stage{stage}_train.zip")
-    test_zip = os.path.join(ROOT, "datasets/raw", f"stage{stage}_test.zip")
-    unzip_dataset(train_zip, os.path.join(ROOT, "datasets/raw", "stage1_train"))
-    unzip_dataset(test_zip, os.path.join(ROOT, "datasets/raw", "stage1_test"))
-    
-    train_images_path, train_masks_path, test_images_path, test_masks_path = create_dirs()
-    for i in os.listdir(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train")):
-        assert os.path.exists(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "images")), "Images folder not found"
-        assert os.path.exists(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "masks")), "Masks folder not found"
-        for j in sorted(glob.glob(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "images", "*.png"))):
-            shutil.copy(j, train_images_path)
-        
-        m = 0
-        for k in sorted(glob.glob(os.path.join(ROOT, "datasets/raw", f"stage{stage}_train", i, "masks", "*.png"))):
-            m += 1
-            mask = sitk.GetArrayFromImage(sitk.ReadImage(k))
-            mask[mask != 0] = 255
-            if m == 1:
-                combined_label = mask
-                continue
-            combined_label += mask
-            
-        sitk.WriteImage(sitk.GetImageFromArray(combined_label), os.path.join(train_masks_path, i + ".png"))
-    
-    for i in os.listdir(os.path.join(ROOT, "datasets/raw", f"stage{stage}_test")):
-        assert os.path.exists(os.path.join(ROOT, "datasets/raw", f"stage{stage}_test", i, "images")), "Images folder not found"
-        assert not os.path.exists(os.path.join(ROOT, "datasets/raw", f"stage{stage}_test", i, "masks")), "Masks folder found"
-        for j in sorted(glob.glob(os.path.join(ROOT, "datasets/raw", f"stage{stage}_test", i, "images", "*.png"))):
-            shutil.copy(j, test_images_path)
-    
-    return load_dataset(train_images_path, train_masks_path, test_images_path, test_masks_path, cfg)
-
-def convert_to_greyscale(image):
-    return image.convert('L')
 
 def load_dataset(
-    train_images_path: str,
-    train_masks_path: str,
-    test_images_path: str,
-    test_masks_path: str,
+    train_path: str,
+    test_path: str,
     cfg: OmegaConf
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     # create a dic with directory of images and masks
     train_files = [{"image": img, "label": mask} for img, mask in 
-                   zip(sorted(glob.glob(os.path.join(train_images_path, "*.png"))), 
-                       sorted(glob.glob(os.path.join(train_masks_path, "*.png"))))]
+                   zip(sorted(glob.glob(os.path.join(train_path, "images/*.png"))), 
+                       sorted(glob.glob(os.path.join(train_path, "masks/*.png"))))]
     test_files = [{"image": img, "label": mask} for img, mask in 
-                  zip(sorted(glob.glob(os.path.join(test_images_path, "*.png"))), 
-                      sorted(glob.glob(os.path.join(test_masks_path, "*.png"))))]
+                  zip(sorted(glob.glob(os.path.join(test_path, "images/*.png"))), 
+                      sorted(glob.glob(os.path.join(test_path, "masks/*.png"))))]
     # define transforms
     transforms = Compose(
         [
@@ -221,7 +163,7 @@ def load_dataset(
     )
     te_loader = DataLoader(
         CacheDataset(test_files, transform=transforms, cache_num=16, hash_as_key=True),
-        batch_size=cfg.training.batch_size,
+        batch_size=1,
         shuffle=False,
         num_workers=cfg.training.num_workers
     )
