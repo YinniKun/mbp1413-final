@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:24:56
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-21 00:19:26
+LastEditTime: 2024-02-21 03:04:18
 FilePath: /mbp1413-final/main.py
 Description: main script for the project
 I Love IU
@@ -50,7 +50,7 @@ def main() -> None:
         model.train()
 
     elif args.mode == "test":
-        # Done: finish test
+        # TODO: find test masks
         model.init_inference_dir()
         model.test()
     else:

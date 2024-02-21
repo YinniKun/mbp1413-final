@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-21 02:28:59
+LastEditTime: 2024-02-21 03:03:28
 FilePath: /mbp1413-final/models/network.py
 Description: base network class for the project
 I Love IU
@@ -23,6 +23,7 @@ import SimpleITK as sitk
 from pathlib import Path
 
 ROOT = Path(os.path.dirname(os.path.realpath(__file__))).parent
+
 
 class Network(nn.Module):
     def __init__(
