@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:17:54
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-21 02:04:52
+LastEditTime: 2024-02-21 03:02:23
 FilePath: /mbp1413-final/models/utils.py
 Description: utility functions for the project
 I Love IU
@@ -185,7 +185,7 @@ def load_dataset(
             # Ensure channel is the first dimension
             EnsureChannelFirstd(keys=["image", "label"]),
             # resize images and masks with scaling
-            Resized(keys=["image", "label"], spatial_size=(1024, 1024), mode=("linear", "nearest")),
+            Resized(keys=["image", "label"], spatial_size=(512, 512), mode=("linear", "nearest")),
             # Scale intensity values of the image within the specified range
             ScaleIntensityRanged(
                 keys=["image"],

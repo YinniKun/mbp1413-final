@@ -30,7 +30,6 @@ training:
   optimizer: "Adam"
   loss: "DiceFocalLoss"
   metrics: ["Dice", "IoU"]
-  early_stopping: True
   save_dir: ""
   val_period: 5
   num_workers: 4
