@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:24:56
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-17 20:12:53
+LastEditTime: 2024-02-21 00:19:26
 FilePath: /mbp1413-final/main.py
 Description: main script for the project
 I Love IU
@@ -35,9 +35,10 @@ def main() -> None:
     cfg = OmegaConf.load(args.cfg)
     if args.download:
         download_dataset(cfg)
-    # TODO: add data augmentation and dataloader
+    # Done: add data augmentation and dataloader
     tr_loader, val_loader, te_loader = map_dataset(cfg)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
+    # device = torch.device("cpu")
     model = modules[cfg.model.name](cfg, device, tr_loader, val_loader, te_loader)
     
     if args.mode == "train":

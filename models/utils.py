@@ -2,29 +2,20 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:17:54
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-17 20:11:56
+LastEditTime: 2024-02-21 02:04:52
 FilePath: /mbp1413-final/models/utils.py
 Description: utility functions for the project
 I Love IU
 Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved. 
 '''
 import monai
-from monai.data import DataLoader
+from monai.data import DataLoader, CacheDataset
 from monai.transforms import (
-    AsDiscrete,
-    AsDiscreted,
     EnsureChannelFirstd,
     Compose,
-    CropForegroundd,
     LoadImaged,
-    Orientationd,
-    RandCropByPosNegLabeld,
-    SaveImaged,
     ScaleIntensityRanged,
-    Spacingd,
-    RandAffined,
     Resized,
-    Lambdad
 )
 import torch
 import torch.nn as nn
@@ -77,7 +68,7 @@ def unzip_dataset(
 def DFLoss() -> nn.Module:
     loss = monai.losses.GeneralizedDiceFocalLoss(
         include_background=True,
-        to_onehot_y=True,  # Added a comma here
+        to_onehot_y=True,
         softmax=True,
         reduction="mean"
     )
@@ -187,65 +178,14 @@ def load_dataset(
                   zip(sorted(glob.glob(os.path.join(test_images_path, "*.png"))), 
                       sorted(glob.glob(os.path.join(test_masks_path, "*.png"))))]
     # define transforms
-    train_transforms = Compose(
-        [
-        # Load image and label data
-        LoadImaged(keys=["image", "label"]), #png files loaded as PIL image
-        # Ensure channel is the first dimension
-        EnsureChannelFirstd(keys=["image", "label"]),
-        # Convert images and masks to grey scale
-        Lambdad(keys=["image", "label"], func=convert_to_greyscale),
-        # resize images and masks with scaling
-        Resized(keys=["image", "label"], spatial_size=(256, 256), mode=("bilinear", "nearest")),
-        # Scale intensity values of the image within the specified range
-        ScaleIntensityRanged(
-            keys=["image"],
-            a_min=-57,
-            a_max=164,
-            b_min=0.0,
-            b_max=1.0,
-            clip=True,
-        ),
-        # Crop foreground from the image and label using the source image
-        # so that it will not learn the background
-        CropForegroundd(keys=["image", "label"], source_key="image"),
-        # Adjust the orientation of the image and label using RAS (Right, Anterior, Superior) axcodes
-        Orientationd(keys=["image", "label"], axcodes="RAS"),
-        # Adjust the spacing of the image and label using specified pixel dimensions and interpolation modes
-        # this helps with data integration
-        Spacingd(keys=["image", "label"], pixdim=(1.5, 1.5), mode=("bilinear", "nearest")),
-        # Randomly crop regions with positive and negative labels to create training samples
-        RandCropByPosNegLabeld(
-            keys=["image", "label"],
-            label_key="label",
-            spatial_size=(96, 96), # this will be the size of our cropped images to be inputted
-            pos=1,
-            neg=1,
-            num_samples=4,
-            image_key="image",
-            image_threshold=0,
-        ),
-        # random transforms
-        RandAffined(
-            keys=['image', 'label'],
-            mode=('bilinear', 'nearest'),
-            prob=1.0, spatial_size=(96, 96),
-            rotate_range=(0, 0, np.pi/15),
-            scale_range=(0.1, 0.1))
-        ]
-    )
-
-# Define validation and test transforms
-    val_transforms = Compose(
+    transforms = Compose(
         [
             # Load image and label data
-            LoadImaged(keys=["image", "label"]),
+            LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader'), #png files loaded as PIL image
             # Ensure channel is the first dimension
             EnsureChannelFirstd(keys=["image", "label"]),
-            # Convert images and masks to grey scale
-            Lambdad(keys=["image", "label"], func=convert_to_greyscale),
             # resize images and masks with scaling
-            Resized(keys=["image", "label"], spatial_size=(256, 256), mode=("bilinear", "nearest")),
+            Resized(keys=["image", "label"], spatial_size=(1024, 1024), mode=("linear", "nearest")),
             # Scale intensity values of the image within the specified range
             ScaleIntensityRanged(
                 keys=["image"],
@@ -254,43 +194,36 @@ def load_dataset(
                 b_min=0.0,
                 b_max=1.0,
                 clip=True,
-            ),
-            # Crop foreground from the image and label using the source image
-            CropForegroundd(keys=["image", "label"], source_key="image"),
-            # Adjust the orientation of the image and label using RAS (Right, Anterior, Superior) axcodes
-            Orientationd(keys=["image", "label"], axcodes="RAS"),
-            # Adjust the spacing of the image and label using specified pixel dimensions and interpolation modes
-            Spacingd(keys=["image", "label"], pixdim=(1.5, 1.5), mode=("bilinear", "nearest")),
+            )
         ]
     )
 
     # load datasets
     tran_size = int(0.8 * len(train_files))
     val_size = len(train_files) - tran_size
-    train_data, test_data = torch.utils.data.random_split(train_files, [tran_size, val_size])
+    train_data, val_data = torch.utils.data.random_split(train_files, [tran_size, val_size])
     print(f"Training data size: {len(train_data)}")
-    print(f"Validation data size: {len(test_data)}")
+    print(f"Validation data size: {len(val_data)}")
 
+    
+    
     tr_loader = DataLoader(
-        train_data,
+        CacheDataset(train_data, transform=transforms, cache_num=16, hash_as_key=True),
         batch_size=cfg.training.batch_size,
         shuffle=True,
-        num_workers=cfg.training.num_workers,
-        transform=train_transforms
+        num_workers=cfg.training.num_workers
     )
     val_loader = DataLoader(
-        test_data,
+        CacheDataset(val_data, transform=transforms, cache_num=16, hash_as_key=True),
         batch_size=cfg.training.batch_size,
         shuffle=False,
-        num_workers=cfg.training.num_workers,
-        transform=val_transforms
+        num_workers=cfg.training.num_workers
     )
     te_loader = DataLoader(
-        test_files,
+        CacheDataset(test_files, transform=transforms, cache_num=16, hash_as_key=True),
         batch_size=cfg.training.batch_size,
         shuffle=False,
-        num_workers=cfg.training.num_workers,
-        transform=val_transforms
+        num_workers=cfg.training.num_workers
     )
     
     return tr_loader, val_loader, te_loader
