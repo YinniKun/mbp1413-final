@@ -3,10 +3,14 @@ Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:24:56
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
 <<<<<<< HEAD
+LastEditTime: 2024-02-21 02:42:44
+=======
+<<<<<<< HEAD
 LastEditTime: 2024-02-21 00:19:26
 =======
 LastEditTime: 2024-02-17 20:12:53
 >>>>>>> main
+>>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
 FilePath: /mbp1413-final/main.py
 Description: main script for the project
 I Love IU
@@ -41,11 +45,15 @@ def main() -> None:
         download_dataset(cfg)
 <<<<<<< HEAD
     # Done: add data augmentation and dataloader
+=======
+<<<<<<< HEAD
+    # Done: add data augmentation and dataloader
     tr_loader, val_loader, te_loader = map_dataset(cfg)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
     # device = torch.device("cpu")
 =======
     # TODO: add data augmentation and dataloader
+>>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
     tr_loader, val_loader, te_loader = map_dataset(cfg)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
 >>>>>>> main

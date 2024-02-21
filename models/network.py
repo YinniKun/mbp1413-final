@@ -3,10 +3,14 @@ Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
 <<<<<<< HEAD
+LastEditTime: 2024-02-21 02:50:16
+=======
+<<<<<<< HEAD
 LastEditTime: 2024-02-21 02:28:59
 =======
 LastEditTime: 2024-02-17 20:16:10
 >>>>>>> main
+>>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
 FilePath: /mbp1413-final/models/network.py
 Description: base network class for the project
 I Love IU
@@ -90,7 +94,11 @@ class Network(nn.Module):
 <<<<<<< HEAD
                     y[y != 0] = 1 # convert to binary mask
 =======
+<<<<<<< HEAD
+                    y[y != 0] = 1 # convert to binary mask
+=======
 >>>>>>> main
+>>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
                     y_pred = self.model(x)
                     loss = self.loss(y_pred, y)
                     loss.backward()
@@ -101,6 +109,9 @@ class Network(nn.Module):
             self.train_losses.append([self.epoch+1, np.mean(tr_loss, axis=0)])
 
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
             if (self.epoch+1) % self.valid_period == 0:
                 val_loss = []
                 val_dsc = []
@@ -137,6 +148,8 @@ class Network(nn.Module):
 
             self.save_checkpoint(mode="last")
             plot_progress(self.plots_dir, self.train_losses, self.valid_losses, self.dscs, self.ious, "loss")
+<<<<<<< HEAD
+=======
 =======
         if (self.epoch+1) % self.valid_period == 0:
             val_loss = []
@@ -174,6 +187,7 @@ class Network(nn.Module):
         self.save_checkpoint(mode="last")
         plot_progress(self.plots_dir, self.train_losses, self.valid_losses, self.dscs, self.ious, "loss")
 >>>>>>> main
+>>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
 
     def test(self) -> None:
         results = {}
@@ -196,11 +210,19 @@ class Network(nn.Module):
                     y_pred_label_numpy = y_pred_label.detach().cpu().numpy().astype(np.uint8)[0,0,...]
                     y_pred_label_numpy[y_pred_label_numpy != 0] = 255
 =======
+<<<<<<< HEAD
+                    y[y != 0] = 1 # convert to binary mask
+                    y_pred = self.model(x)
+                    y_pred_label = torch.argmax(torch.softmax(y_pred, dim=1), dim=1, keepdim=True)
+                    y_pred_label_numpy = y_pred_label.detach().cpu().numpy().astype(np.uint8)[0,0,...]
+                    y_pred_label_numpy[y_pred_label_numpy != 0] = 255
+=======
                     y_pred = self.model(x)
                     y_pred_label = torch.argmax(torch.softmax(
                         y_pred, dim=1), dim=1, keep_dim=True)
                     y_pred_label_numpy = y_pred_label.detach().cpu().numpy()[0]
 >>>>>>> main
+>>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
                     sitk_seg = sitk.GetImageFromArray(y_pred_label_numpy)
                     sitk_seg.SetDirection(batch["seg_meta_dict"]["original_affine"][0, :3, :3].detach().cpu().numpy().flatten().tolist())
                     sitk_seg.SetOrigin(batch["seg_meta_dict"]["original_affine"][0, :3, 3].detach().cpu().numpy().tolist())
@@ -214,9 +236,14 @@ class Network(nn.Module):
                     list_dsc = dice_score.detach().cpu().numpy().astype(np.float64).tolist()
                     list_iou = iou_score.detach().cpu().numpy().astype(np.float64).tolist()
 =======
+<<<<<<< HEAD
+                    list_dsc = dice_score.detach().cpu().numpy().astype(np.float64).tolist()
+                    list_iou = iou_score.detach().cpu().numpy().astype(np.float64).tolist()
+=======
                     list_dsc = dice_score.reshape(-1,).detach().cpu().numpy().astype(np.float64).tolist()
                     list_iou = (1-iou_score.reshape(-1,)).detach().cpu().numpy().astype(np.float64).tolist()
 >>>>>>> main
+>>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
                     dscs.append(list_dsc)
                     ious.append(list_iou)
                     results[filename] = {
@@ -250,8 +277,12 @@ class Network(nn.Module):
 <<<<<<< HEAD
         return self.dice_metric(y_pred, y)[0], 1-self.jaccard_loss(y_pred, y)
 =======
+<<<<<<< HEAD
+        return self.dice_metric(y_pred, y)[0], 1-self.jaccard_loss(y_pred, y)
+=======
         return self.dice_metric(y_pred, y), 1-self.jaccard_loss(y_pred, y)
 >>>>>>> main
+>>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
 
     def full_score(
         self,
@@ -261,8 +292,12 @@ class Network(nn.Module):
 <<<<<<< HEAD
         return self.full_dice_metric(y_pred, y)[0].flatten(), 1-(self.full_jaccard_loss(y_pred, y).flatten())
 =======
+<<<<<<< HEAD
+        return self.full_dice_metric(y_pred, y)[0].flatten(), 1-(self.full_jaccard_loss(y_pred, y).flatten())
+=======
         return self.full_dice_metric(y_pred, y).reshape(-1, ), 1-(self.full_jaccard_loss(y_pred, y).reshape(-1, ))
 >>>>>>> main
+>>>>>>> cafba55bdaefa987f67c7c5aad4f0c0bcc137a87
 
     def init_params(self) -> None:
         self.loss_metric = DFLoss()
