@@ -2,7 +2,11 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
+<<<<<<< HEAD
 LastEditTime: 2024-02-21 02:28:59
+=======
+LastEditTime: 2024-02-17 20:16:10
+>>>>>>> main
 FilePath: /mbp1413-final/models/network.py
 Description: base network class for the project
 I Love IU
@@ -83,7 +87,10 @@ class Network(nn.Module):
                     self.optimizer.zero_grad()
                     x, y = batch["image"].to(
                         self.device), batch["label"].to(self.device)
+<<<<<<< HEAD
                     y[y != 0] = 1 # convert to binary mask
+=======
+>>>>>>> main
                     y_pred = self.model(x)
                     loss = self.loss(y_pred, y)
                     loss.backward()
@@ -93,6 +100,7 @@ class Network(nn.Module):
 
             self.train_losses.append([self.epoch+1, np.mean(tr_loss, axis=0)])
 
+<<<<<<< HEAD
             if (self.epoch+1) % self.valid_period == 0:
                 val_loss = []
                 val_dsc = []
@@ -129,6 +137,43 @@ class Network(nn.Module):
 
             self.save_checkpoint(mode="last")
             plot_progress(self.plots_dir, self.train_losses, self.valid_losses, self.dscs, self.ious, "loss")
+=======
+        if (self.epoch+1) % self.valid_period == 0:
+            val_loss = []
+            val_dsc = []
+            val_iou = []
+            self.model.eval()
+            with torch.no_grad():
+                with tqdm(self.val_loader, unit='batch') as tepoch:
+                    for batch in tepoch:
+                        tepoch.set_description(
+                            f"Epoch {epoch+1}/{self.cfg.training.epochs} Validation")
+                        x, y = batch["image"].to(
+                            self.device), batch["label"].to(self.device)
+                        y_pred = self.model(x)
+                        y_pred_logits = torch.argmax(torch.softmax(
+                            y_pred, dim=1), dim=1, keep_dim=True)
+                        y_pred_class = monai.networks.utils.one_hot(
+                            y_pred_logits, num_classes=self.cfg.model.out_channels)
+                        loss = self.loss(y_pred, y)
+                        dice_score, iou_score = self.score(y_pred_class, y)
+                        val_dsc.append(dice_score.item())
+                        val_iou.append(iou_score.item())
+                        val_loss.append(loss.item())
+                        tepoch.set_postfix(
+                            loss=loss.item(), dice=dice_score.item(), iou=iou_score.item())
+
+            self.valid_losses.append([self.epoch+1, np.mean(val_loss, axis=0)])
+            self.dscs.append([self.epoch+1, np.mean(val_dsc, axis=0)])
+            self.ious.append([self.epoch+1, np.mean(val_iou, axis=0)])
+
+            if np.mean(val_loss, axis=0) < self.best_valid_loss:
+                self.best_valid_loss = np.mean(val_loss, axis=0)
+                self.save_checkpoint(mode="best")
+
+        self.save_checkpoint(mode="last")
+        plot_progress(self.plots_dir, self.train_losses, self.valid_losses, self.dscs, self.ious, "loss")
+>>>>>>> main
 
     def test(self) -> None:
         results = {}
@@ -144,11 +189,18 @@ class Network(nn.Module):
                     tepoch.set_description("Model Inference")
                     x, y = batch["image"].to(
                         self.device), batch["label"].to(self.device)
+<<<<<<< HEAD
                     y[y != 0] = 1 # convert to binary mask
                     y_pred = self.model(x)
                     y_pred_label = torch.argmax(torch.softmax(y_pred, dim=1), dim=1, keepdim=True)
                     y_pred_label_numpy = y_pred_label.detach().cpu().numpy().astype(np.uint8)[0,0,...]
                     y_pred_label_numpy[y_pred_label_numpy != 0] = 255
+=======
+                    y_pred = self.model(x)
+                    y_pred_label = torch.argmax(torch.softmax(
+                        y_pred, dim=1), dim=1, keep_dim=True)
+                    y_pred_label_numpy = y_pred_label.detach().cpu().numpy()[0]
+>>>>>>> main
                     sitk_seg = sitk.GetImageFromArray(y_pred_label_numpy)
                     sitk_seg.SetDirection(batch["seg_meta_dict"]["original_affine"][0, :3, :3].detach().cpu().numpy().flatten().tolist())
                     sitk_seg.SetOrigin(batch["seg_meta_dict"]["original_affine"][0, :3, 3].detach().cpu().numpy().tolist())
@@ -158,8 +210,13 @@ class Network(nn.Module):
                         y_pred_label, num_classes=self.cfg.model.out_channels)
                     dice_score, iou_score = self.full_score(y_pred_class, y)
                     
+<<<<<<< HEAD
                     list_dsc = dice_score.detach().cpu().numpy().astype(np.float64).tolist()
                     list_iou = iou_score.detach().cpu().numpy().astype(np.float64).tolist()
+=======
+                    list_dsc = dice_score.reshape(-1,).detach().cpu().numpy().astype(np.float64).tolist()
+                    list_iou = (1-iou_score.reshape(-1,)).detach().cpu().numpy().astype(np.float64).tolist()
+>>>>>>> main
                     dscs.append(list_dsc)
                     ious.append(list_iou)
                     results[filename] = {
@@ -190,14 +247,22 @@ class Network(nn.Module):
         y_pred: torch.Tensor,
         y: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+<<<<<<< HEAD
         return self.dice_metric(y_pred, y)[0], 1-self.jaccard_loss(y_pred, y)
+=======
+        return self.dice_metric(y_pred, y), 1-self.jaccard_loss(y_pred, y)
+>>>>>>> main
 
     def full_score(
         self,
         y_pred: torch.Tensor,
         y: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+<<<<<<< HEAD
         return self.full_dice_metric(y_pred, y)[0].flatten(), 1-(self.full_jaccard_loss(y_pred, y).flatten())
+=======
+        return self.full_dice_metric(y_pred, y).reshape(-1, ), 1-(self.full_jaccard_loss(y_pred, y).reshape(-1, ))
+>>>>>>> main
 
     def init_params(self) -> None:
         self.loss_metric = DFLoss()
