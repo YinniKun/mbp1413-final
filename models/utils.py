@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:17:54
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-21 17:46:11
+LastEditTime: 2024-02-21 20:00:59
 FilePath: /mbp1413-final/models/utils.py
 Description: utility functions for the project
 I Love IU
@@ -31,7 +31,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 from pathlib import Path
-from omegaconf import OmegaConf
 
 ROOT = Path(os.path.dirname(os.path.realpath(__file__))).parent
 
@@ -110,7 +109,7 @@ def FullJaccardLoss() -> nn.Module:
 def load_dataset(
     train_path: str,
     test_path: str,
-    cfg: OmegaConf
+    cfg: Dict[str, Any]
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     # create a dic with directory of images and masks
     train_files = [{"image": img, "label": mask} for img, mask in 
@@ -139,7 +138,6 @@ def load_dataset(
             )
         ]
     )
-
     # load datasets
     tran_size = int(0.8 * len(train_files))
     val_size = len(train_files) - tran_size
@@ -147,8 +145,6 @@ def load_dataset(
     print(f"Training data size: {len(train_data)}")
     print(f"Validation data size: {len(val_data)}")
 
-    
-    
     tr_loader = DataLoader(
         CacheDataset(train_data, transform=transforms, cache_num=16, hash_as_key=True),
         batch_size=cfg.training.batch_size,

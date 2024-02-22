@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:24:56
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-21 17:45:07
+LastEditTime: 2024-02-21 20:01:12
 FilePath: /mbp1413-final/main.py
 Description: main script for the project
 I Love IU
@@ -38,21 +38,17 @@ def main() -> None:
     cfg = OmegaConf.load(args.cfg)
     if args.download:
         download_dataset(cfg)
-
     train_path = os.path.join(ROOT, "datasets", "train")
     test_path = os.path.join(ROOT, "datasets", "test")
     tr_loader, val_loader, te_loader = load_dataset(train_path, test_path, cfg)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
-    # device = torch.device("cpu")
     model = modules[cfg.model.name](cfg, device, tr_loader, val_loader, te_loader)
     if args.mode == "train":
         if args.resume:
             model.load_checkpoint(mode="last")
         else:
             model.init_training_dir()
-        
         model.train()
-
     elif args.mode == "test":
         model.init_inference_dir()
         model.test()

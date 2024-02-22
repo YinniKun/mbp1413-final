@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-21 17:28:46
+LastEditTime: 2024-02-21 20:02:58
 FilePath: /mbp1413-final/models/network.py
 Description: base network class for the project
 I Love IU
@@ -12,7 +12,7 @@ Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved.
 import torch
 import torch.nn as nn
 from .utils import DFLoss, DiceScore, JaccardLoss, plot_progress, FullDiceScore, FullJaccardLoss, make_if_dont_exist
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, List
 import monai
 from monai.data import DataLoader
 from tqdm import tqdm
@@ -194,7 +194,7 @@ class Network(nn.Module):
         self,
         y_pred: torch.Tensor,
         y: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
         return self.full_dice_metric(y_pred, y)[0].flatten(), 1-(self.full_jaccard_loss(y_pred, y).flatten())
 
     def init_params(self) -> None:
