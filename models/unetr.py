@@ -19,13 +19,15 @@ from monai.data import DataLoader
 class unetr(Network):
     def __init__(
         self, 
+        lr: float,
+        epoch: int,
         cfg: Dict[str, Any],
         device: torch.device,
         tr_loader: DataLoader,
         val_loader: DataLoader,
         te_loader: DataLoader
     ) -> None:
-        super(unetr, self).__init__(cfg, device, tr_loader, val_loader, te_loader)
+        super(unetr, self).__init__(cfg, lr, epoch, device, tr_loader, val_loader, te_loader)
         self.init_model()
         self.init_params()
     
