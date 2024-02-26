@@ -30,6 +30,8 @@ def parse_command() -> argparse.Namespace:
     parser.add_argument("-m", "--mode", type=str, default="train", help="mode of the program")
     parser.add_argument("-d", "--download", action="store_true", help="use this if you want to download the dataset")
     parser.add_argument("-r", "--resume", action="store_true", help="use this if you want to continue a training")
+    parser.add_argument("-e", "--epochs", type=int, default=200, help="Number of epochs for training")
+    parser.add_argument("-l", "--learning_rate", type=float, default=0.001, help="Learning rate")
     return parser.parse_args()
 
 def main() -> None:
@@ -42,7 +44,7 @@ def main() -> None:
     test_path = os.path.join(ROOT, "datasets", "test")
     tr_loader, val_loader, te_loader = load_dataset(train_path, test_path, cfg)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
-    model = modules[cfg.model.name](cfg, device, tr_loader, val_loader, te_loader)
+    model = unet(cfg, args.learning_rate, args.epochs, device, tr_loader, val_loader, te_loader)
     if args.mode == "train":
         if args.resume:
             model.load_checkpoint(mode="last")
@@ -54,6 +56,21 @@ def main() -> None:
         model.test()
     else:
         raise ValueError("mode not supported")
+    print("Training and testing completed for unet")
+    # train-test for unet-r with the same parameters
+    model = unetr(cfg, args.learning_rate, args.epochs, device, tr_loader, val_loader, te_loader)
+    if args.mode == "train":
+        if args.resume:
+            model.load_checkpoint(mode="last")
+        else:
+            model.init_training_dir()
+        model.train()
+    elif args.mode == "test":
+        model.init_inference_dir()
+        model.test()
+    else:
+        raise ValueError("mode not supported")
+    print("Training and testing completed for unetr")
 
 if __name__ == "__main__":
     main()

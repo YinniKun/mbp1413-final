@@ -29,6 +29,8 @@ class Network(nn.Module):
     def __init__(
         self,
         cfg: Dict[str, Any],
+        lr: float,
+        epoch: int,
         device: torch.device,
         tr_loader: DataLoader,
         val_loader: DataLoader,
@@ -36,6 +38,8 @@ class Network(nn.Module):
     ) -> None:
         super(Network, self).__init__()
         self.cfg = cfg
+        self.lr = lr
+        self.max_epoch = epoch
         self.device = device
         self.tr_loader = tr_loader
         self.val_loader = val_loader
@@ -199,7 +203,6 @@ class Network(nn.Module):
 
     def init_params(self) -> None:
         self.loss_metric = DFLoss()
-        self.lr = self.cfg.training.lr
         self.dice_metric = DiceScore()
         self.jaccard_loss = JaccardLoss()
         self.full_dice_metric = FullDiceScore()
@@ -208,7 +211,6 @@ class Network(nn.Module):
             self.model.parameters(), lr=self.lr)
         self.train_losses, self.valid_losses, self.dscs, self.ious = [], [], [], []
         self.best_valid_loss = np.inf
-        self.max_epoch = self.cfg.training.epochs
         self.valid_period = self.cfg.training.val_period
         self.start_epoch, self.epoch = 0, 0
 

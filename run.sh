@@ -11,4 +11,17 @@
 
 source /project/6068045/zf2dong/mbp1413/env/pytorch/bin/activate
  
-python main.py -c config.yaml
+python main.py -c config.yaml -e 50 -l 0.001
+python main.py -c config.yaml -r -e 100  -l 0.001
+python main.py -c config.yaml -r -e 150 -l 0.001
+python main.py -c config.yaml -r -e 150 -l 0.001
+
+python main.py -c config.yaml -e 50 -l 0.005
+python main.py -c config.yaml -r -e 100  -l 0.005
+python main.py -c config.yaml -r -e 150 -l 0.005
+python main.py -c config.yaml -r -e 150 -l 0.005
+
+python main.py -c config.yaml -e 50 -l 0.01
+python main.py -c config.yaml -r -e 100  -l 0.01
+python main.py -c config.yaml -r -e 150 -l 0.01
+python main.py -c config.yaml -r -e 150 -l 0.01
