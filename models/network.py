@@ -21,7 +21,7 @@ import os
 import json
 from PIL import Image
 from pathlib import Path
-import OmegaConf
+from omegaconf import OmegaConf
 
 ROOT = Path(os.path.dirname(os.path.realpath(__file__))).parent
 
