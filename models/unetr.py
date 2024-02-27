@@ -29,6 +29,7 @@ class unetr(Network):
         val_loader: DataLoader,
         te_loader: DataLoader
     ) -> None:
+        print(type(cfg))
         super(unetr, self).__init__(cfg, lr, epoch, device, tr_loader, val_loader, te_loader)
         self.init_model()
         self.init_params()
