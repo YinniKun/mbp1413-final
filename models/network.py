@@ -39,7 +39,6 @@ class Network(nn.Module):
         te_loader: DataLoader,
     ) -> None:
         super(Network, self).__init__()
-        print(type(cfg))
         self.cfg = cfg
         self.lr = lr
         self.max_epoch = epoch
