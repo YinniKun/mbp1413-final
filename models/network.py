@@ -48,16 +48,16 @@ class Network(nn.Module):
         
         # Training save dirs
         self.training_dir = os.path.join(ROOT, f"training_{name}_{lr}_{epoch}")
-        if cfg.training.save_dir != "":
-            self.training_dir = cfg.training.save_dir
+        if self.cfg.training.save_dir != "":
+            self.training_dir = self.cfg.training.save_dir
         self.training_model_dir = os.path.join(self.training_dir, name)
         self.weights_dir = os.path.join(self.training_model_dir, 'weights')
         self.plots_dir = os.path.join(self.training_model_dir, 'plots')
         
         # Inference save dirs
         self.inference_dir = os.path.join(ROOT, f"inference_{name}_{lr}_{epoch}")
-        if cfg.inference.predict_dir != "":
-            self.inference_model_dir = cfg.inference.predict_dir
+        if self.cfg.inference.predict_dir != "":
+            self.inference_model_dir = self.cfg.inference.predict_dir
         self.inference_model_dir = os.path.join(self.inference_dir, name)
 
     def init_model(self) -> None:
