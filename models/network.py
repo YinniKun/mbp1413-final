@@ -32,6 +32,7 @@ class Network(nn.Module):
         lr: float,
         epoch: int,
         device: torch.device,
+        name: str,
         tr_loader: DataLoader,
         val_loader: DataLoader,
         te_loader: DataLoader,
@@ -46,18 +47,18 @@ class Network(nn.Module):
         self.te_loader = te_loader
         
         # Training save dirs
-        self.training_dir = os.path.join(ROOT, "training")
+        self.training_dir = os.path.join(ROOT, f"training_{name}_{lr}_{epoch}")
         if cfg.training.save_dir != "":
             self.training_dir = cfg.training.save_dir
-        self.training_model_dir = os.path.join(self.training_dir, cfg.model.name)
+        self.training_model_dir = os.path.join(self.training_dir, name)
         self.weights_dir = os.path.join(self.training_model_dir, 'weights')
         self.plots_dir = os.path.join(self.training_model_dir, 'plots')
         
         # Inference save dirs
-        self.inference_dir = os.path.join(ROOT, "inference")
+        self.inference_dir = os.path.join(ROOT, f"inference_{name}_{lr}_{epoch}")
         if cfg.inference.predict_dir != "":
             self.inference_model_dir = cfg.inference.predict_dir
-        self.inference_model_dir = os.path.join(self.inference_dir, cfg.model.name)
+        self.inference_model_dir = os.path.join(self.inference_dir, name)
 
     def init_model(self) -> None:
         pass
@@ -84,7 +85,7 @@ class Network(nn.Module):
             with tqdm(self.tr_loader, unit="batch") as tepoch:
                 for batch in tepoch:
                     tepoch.set_description(
-                        f"Epoch {epoch+1}/{self.cfg.training.epochs} Training")
+                        f"Epoch {epoch+1}/{self.max_epoch} Training")
                     self.optimizer.zero_grad()
                     x, y = batch["image"].to(
                         self.device), batch["label"].to(self.device)
@@ -107,7 +108,7 @@ class Network(nn.Module):
                     with tqdm(self.val_loader, unit='batch') as tepoch:
                         for batch in tepoch:
                             tepoch.set_description(
-                                f"Epoch {epoch+1}/{self.cfg.training.epochs} Validation")
+                                f"Epoch {epoch+1}/{self.max_epoch} Validation")
                             x, y = batch["image"].to(
                                 self.device), batch["label"].to(self.device)
                             y[y != 0] = 1 # convert to binary mask
@@ -137,7 +138,7 @@ class Network(nn.Module):
 
     def test(self) -> None:
         results = {}
-        self.load_checkpoint(mode="best", ckpt_path=self.cfg.inference.model_dir)
+        self.load_checkpoint(mode="best", ckpt_path=self.inference_model_dir)
         self.model.eval()
         dscs = []
         ious = []

@@ -23,6 +23,7 @@ class unetr(Network):
         epoch: int,
         cfg: Dict[str, Any],
         device: torch.device,
+        name: str,
         tr_loader: DataLoader,
         val_loader: DataLoader,
         te_loader: DataLoader
