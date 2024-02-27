@@ -45,7 +45,6 @@ def main() -> None:
     test_path = os.path.join(ROOT, "datasets", "test")
     tr_loader, val_loader, te_loader = load_dataset(train_path, test_path, cfg)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
-    print(type(cfg))
     model = unet(cfg, args.learning_rate, args.epochs, device, "unet", tr_loader, val_loader, te_loader)
     if args.mode == "train":
         if args.resume:

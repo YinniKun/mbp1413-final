@@ -20,9 +20,9 @@ from omegaconf import OmegaConf
 class unet(Network):
     def __init__(
         self,
+        cfg: Dict[str, Any],
         lr: float,
         epoch: int,
-        cfg: Dict[str, Any],
         device: torch.device,
         name: str,
         tr_loader: DataLoader,
