@@ -16,6 +16,7 @@ from models.unet import unet
 from models.unetr import unetr
 import torch
 from pathlib import Path
+import gc
 
 ROOT = Path(os.path.dirname(os.path.realpath(__file__)))
 
@@ -61,6 +62,10 @@ def main() -> None:
         print("Testing completed for unet")
     else:
         raise ValueError("mode not supported")
+    # free memory
+    del model
+    torch.cuda.empty_cache()
+    gc.collect()
     # train-test for unet-r with the same parameters
     model = unetr(cfg, args.learning_rate, args.epochs, device, "unetr", tr_loader, val_loader, te_loader)
     if args.mode == "train":
