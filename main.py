@@ -53,13 +53,14 @@ def main() -> None:
         else:
             model.init_training_dir()
         model.train()
+        print("Training completed for unet")
     elif args.mode == "test":
         print("Testing unet")
         model.init_inference_dir()
         model.test()
+        print("Testing completed for unet")
     else:
         raise ValueError("mode not supported")
-    print("Training and testing completed for unet")
     # train-test for unet-r with the same parameters
     model = unetr(cfg, args.learning_rate, args.epochs, device, "unetr", tr_loader, val_loader, te_loader)
     if args.mode == "train":
@@ -69,13 +70,14 @@ def main() -> None:
         else:
             model.init_training_dir()
         model.train()
+        print("Training completed for unetr")
     elif args.mode == "test":
         print("Testing unetr")
         model.init_inference_dir()
         model.test()
+        print("Testing completed for unetr")
     else:
         raise ValueError("mode not supported")
-    print("Training and testing completed for unetr")
 
 if __name__ == "__main__":
     main()
