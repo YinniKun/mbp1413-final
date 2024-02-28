@@ -47,12 +47,14 @@ def main() -> None:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
     model = unet(cfg, args.learning_rate, args.epochs, device, "unet", tr_loader, val_loader, te_loader)
     if args.mode == "train":
+        print("Training unet")
         if args.resume:
             model.load_checkpoint(mode="last")
         else:
             model.init_training_dir()
         model.train()
     elif args.mode == "test":
+        print("Testing unet")
         model.init_inference_dir()
         model.test()
     else:
@@ -61,12 +63,14 @@ def main() -> None:
     # train-test for unet-r with the same parameters
     model = unetr(cfg, args.learning_rate, args.epochs, device, "unetr", tr_loader, val_loader, te_loader)
     if args.mode == "train":
+        print("Training unetr")
         if args.resume:
             model.load_checkpoint(mode="last")
         else:
             model.init_training_dir()
         model.train()
     elif args.mode == "test":
+        print("Testing unetr")
         model.init_inference_dir()
         model.test()
     else:
