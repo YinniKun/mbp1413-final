@@ -139,7 +139,7 @@ class Network(nn.Module):
 
     def test(self) -> None:
         results = {}
-        self.load_checkpoint(mode="best", ckpt_path=self.inference_model_dir)
+        self.load_checkpoint(mode="best")
         self.model.eval()
         dscs = []
         ious = []
@@ -219,14 +219,17 @@ class Network(nn.Module):
     def load_checkpoint(
         self,
         mode: str = None,
-        ckpt_path: str = ""
     ) -> None:
-        if ckpt_path == "":
-            assert os.path.exists(os.path.join(self.weights_dir, f'{mode}_ckpt.pth')), f"{mode.capitalize()} checkpoint not found !!!"
-            ckpt = torch.load(os.path.join(self.weights_dir, f'{mode}_ckpt.pth'), map_location=self.device)
-        else:
-            assert os.path.exists(ckpt_path), "Checkpoint not found !!!"
-            ckpt = torch.load(ckpt_path, map_location=self.device)
+       
+        assert os.path.exists(os.path.join(self.weights_dir, f'{mode}_ckpt.pth')), f"{mode.capitalize()} checkpoint not found !!!"
+        ckpt = torch.load(os.path.join(self.weights_dir, f'{mode}_ckpt.pth'), map_location=self.device)
+
+        # if ckpt_path == "":
+        #     assert os.path.exists(os.path.join(self.weights_dir, f'{mode}_ckpt.pth')), f"{mode.capitalize()} checkpoint not found !!!"
+        #     ckpt = torch.load(os.path.join(self.weights_dir, f'{mode}_ckpt.pth'), map_location=self.device)
+        # else:
+        #     assert os.path.exists(ckpt_path), "Checkpoint not found !!!"
+        #     ckpt = torch.load(ckpt_path, map_location=self.device)
         
         self.optimizer.load_state_dict(ckpt['optimizer'])
         self.model.load_state_dict(ckpt['weights'])

@@ -34,9 +34,9 @@ class unetr(Network):
         self.init_params()
     
     def init_model(self) -> None:
-        # Create U-Net model
+        # Create U-NetR model
         self.model = monai.networks.nets.UNETR(
-            spatial_dim=self.cfg.model.spatial_dim,
+            spatial_dim=self.cfg.model.spatial_dims,
             in_channels=self.cfg.model.in_channels,
             out_channels=self.cfg.model.out_channels,
             image_size=self.cfg.model.image_size,
