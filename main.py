@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:24:56
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-21 20:01:12
+LastEditTime: 2024-02-29 00:20:07
 FilePath: /mbp1413-final/main.py
 Description: main script for the project
 I Love IU
@@ -47,12 +47,12 @@ def main() -> None:
     test_path = os.path.join(ROOT, "datasets", "test")
     tr_loader, val_loader, te_loader = load_dataset(train_path, test_path, cfg)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
-    if args.models == "unet":
-        model = unet(cfg, args.learning_rate, args.epochs, device, "unet", tr_loader, val_loader, te_loader)
-    elif args.models == "unetr":
-        model = unetr(cfg, args.learning_rate, args.epochs, device, "unetr", tr_loader, val_loader, te_loader)
+    
+    if args.models in modules.keys():
+        model = modules[args.models](cfg, args.learning_rate, args.epochs, device, args.models, tr_loader, val_loader, te_loader)
     else:
         raise ValueError("model not supported")
+    
     if args.mode == "train":
         print(f"Training {args.model}")
         if args.resume:
