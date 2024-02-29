@@ -48,8 +48,8 @@ def main() -> None:
     tr_loader, val_loader, te_loader = load_dataset(train_path, test_path, cfg)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
     
-    if args.models in modules.keys():
-        model = modules[args.models](cfg, args.learning_rate, args.epochs, device, args.models, tr_loader, val_loader, te_loader)
+    if args.model in modules.keys():
+        model = modules[args.models](cfg, args.learning_rate, args.epochs, device, args.model, tr_loader, val_loader, te_loader)
     else:
         raise ValueError("model not supported")
     
