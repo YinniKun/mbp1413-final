@@ -28,6 +28,7 @@ modules = {
 def parse_command() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="MBP1413 Final Project")
     parser.add_argument("-c", "--cfg", type=str, default="config.yaml", help="path to the config file")
+    parser.add_argument("-mo", "--model", type=str, default="unet", help="model to use, either unet or unetr")
     parser.add_argument("-m", "--mode", type=str, default="train", help="mode of the program, either test or train")
     parser.add_argument("-d", "--download", action="store_true", help="use this if you want to download the dataset")
     parser.add_argument("-r", "--resume", action="store_true", help="use this if you want to continue a training")
@@ -46,41 +47,25 @@ def main() -> None:
     test_path = os.path.join(ROOT, "datasets", "test")
     tr_loader, val_loader, te_loader = load_dataset(train_path, test_path, cfg)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
-    model = unet(cfg, args.learning_rate, args.epochs, device, "unet", tr_loader, val_loader, te_loader)
-    if args.mode == "train":
-        print("Training unet")
-        if args.resume:
-            model.load_checkpoint(mode="last")
-        else:
-            model.init_training_dir()
-        model.train()
-        print("Training completed for unet")
-    elif args.mode == "test":
-        print("Testing unet")
-        model.init_inference_dir()
-        model.test()
-        print("Testing completed for unet")
+    if args.models == "unet":
+        model = unet(cfg, args.learning_rate, args.epochs, device, "unet", tr_loader, val_loader, te_loader)
+    elif args.models == "unetr":
+        model = unetr(cfg, args.learning_rate, args.epochs, device, "unetr", tr_loader, val_loader, te_loader)
     else:
-        raise ValueError("mode not supported")
-    # free memory
-    del model
-    torch.cuda.empty_cache()
-    gc.collect()
-    # train-test for unet-r with the same parameters
-    model = unetr(cfg, args.learning_rate, args.epochs, device, "unetr", tr_loader, val_loader, te_loader)
+        raise ValueError("model not supported")
     if args.mode == "train":
-        print("Training unetr")
+        print(f"Training {args.model}")
         if args.resume:
             model.load_checkpoint(mode="last")
         else:
             model.init_training_dir()
         model.train()
-        print("Training completed for unetr")
+        print(f"Training completed for {args.model}")
     elif args.mode == "test":
-        print("Testing unetr")
+        print(f"Testing {args.model}")
         model.init_inference_dir()
         model.test()
-        print("Testing completed for unetr")
+        print(f"Testing completed for {args.model}")
     else:
         raise ValueError("mode not supported")
 
