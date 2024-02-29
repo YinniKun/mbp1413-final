@@ -25,7 +25,7 @@ model:
 
 training:
   epochs: 200
-  batch_size: 20
+  batch_size: 10
   lr: 0.001
   optimizer: "Adam"
   loss: "DiceFocalLoss"
@@ -37,3 +37,4 @@ training:
 inference:
   model_dir: ""
   predict_dir: ""
+
