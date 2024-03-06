@@ -16,6 +16,7 @@ from monai.transforms import (
     LoadImaged,
     ScaleIntensityRanged,
     Resized,
+    Lambdad
 )
 import torch
 import torch.nn as nn
@@ -123,6 +124,8 @@ def load_dataset(
         [
             # Load image and label data
             LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader'), #png files loaded as PIL image
+            # convert to grey scale for consistency
+            Lambdad(keys=["image", "label"], func=lambda x: x.convert('L')),
             # Ensure channel is the first dimension
             EnsureChannelFirstd(keys=["image", "label"]),
             # resize images and masks with scaling
