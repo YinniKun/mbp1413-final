@@ -124,10 +124,10 @@ def load_dataset(
         [
             # Load image and label data
             LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader'), #png files loaded as PIL image
-            # convert to grey scale for consistency
-            Lambdad(keys=["image", "label"], func=lambda x: np.mean(x, axis=2) if len(x.shape) == 3 else x),
             # Ensure channel is the first dimension
             EnsureChannelFirstd(keys=["image", "label"]),
+            # convert to grey scale for consistency
+            Lambdad(keys=["image", "label"], func=lambda x: x[0:1]*0.2125 + x[1:2]*0.7154 + x[2:3]*0.0721),
             # resize images and masks with scaling
             Resized(keys=["image", "label"], spatial_size=(512, 512), mode=("linear", "nearest")),
             # Scale intensity values of the image within the specified range
