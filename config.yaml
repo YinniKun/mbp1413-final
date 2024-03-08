@@ -25,7 +25,7 @@ model:
 
 training:
   epochs: 200
-  batch_size: 10
+  batch_size: 5
   lr: 0.001
   optimizer: "Adam"
   loss: "DiceFocalLoss"
