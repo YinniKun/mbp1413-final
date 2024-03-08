@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:17:54
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-21 20:00:59
+LastEditTime: 2024-03-07 21:08:17
 FilePath: /mbp1413-final/models/utils.py
 Description: utility functions for the project
 I Love IU
@@ -107,6 +107,13 @@ def FullJaccardLoss() -> nn.Module:
     return score
 
 
+def normalize_image(x):
+    if x.ndim <= 2:
+        x = np.expand_dims(x, axis=0)
+    mean = np.mean(x, axis=(1, 2), keepdims=True)
+    std = np.std(x, axis=(1, 2), keepdims=True)
+    return (x - mean) / std
+
 def load_dataset(
     train_path: str,
     test_path: str,
@@ -122,12 +129,14 @@ def load_dataset(
     # define transforms
     transforms = Compose(
         [
-            # Load image and label data
-            LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader'), #png files loaded as PIL image
+            # ! Load image and label data with grayscale/RGB converter
+            # L: Grayscale
+            # RGB: Red, Green, Blue
+            LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader', converter=lambda image: image.convert("L")), #png files loaded as PIL image
             # Ensure channel is the first dimension
             EnsureChannelFirstd(keys=["image", "label"]),
             # convert to grey scale for consistency
-            Lambdad(keys=["image", "label"], func=lambda x: x[0:1]*0.2125 + x[1:2]*0.7154 + x[2:3]*0.0721),
+            Lambdad(keys=["image", "label"], func=normalize_image),
             # resize images and masks with scaling
             Resized(keys=["image", "label"], spatial_size=(512, 512), mode=("linear", "nearest")),
             # Scale intensity values of the image within the specified range
