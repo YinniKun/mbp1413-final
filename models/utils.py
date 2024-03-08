@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:17:54
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-03-07 21:08:17
+LastEditTime: 2024-03-07 21:13:31
 FilePath: /mbp1413-final/models/utils.py
 Description: utility functions for the project
 I Love IU
@@ -109,9 +109,9 @@ def FullJaccardLoss() -> nn.Module:
 
 def normalize_image(x):
     if x.ndim <= 2:
-        x = np.expand_dims(x, axis=0)
-    mean = np.mean(x, axis=(1, 2), keepdims=True)
-    std = np.std(x, axis=(1, 2), keepdims=True)
+        x = x.unsqueeze(0)
+    mean = torch.mean(x, axis=(1, 2), keepdims=True)
+    std = torch.std(x, axis=(1, 2), keepdims=True)
     return (x - mean) / std
 
 def load_dataset(
