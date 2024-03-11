@@ -21,6 +21,9 @@ python main.py
 -m mode # default is "train", can be "train" or "test"
 -d #flag for downloading dataset. Action won't be triggered if not using this flag
 -r #flag for resuming the training process. Action won't be triggered if not using this flag
+-e 200 #the epochs number, default is 200
+-l 0.001 #the learning rate, default is 0.001 
+-mo "unetr" #the model to be trained/tested, default is "unet"
 ```
 To run on Compute Canada, use:
 ```bash
