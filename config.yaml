@@ -6,7 +6,7 @@ experiment:
 dataset:
   name: "Nuclei Dataset"
   description: "A dataset of nuclei images for training and testing"
-  url: "https://drive.google.com/file/d/1R6yO4DtEmsLRtkCroTeSNeRE78wZSfWi/view?usp=drive_link"
+  url: "https://drive.google.com/file/d/1xgwanFgjYzhJiDtmgg5qekppCadgZB-m/view?usp=sharing"
   stage: 1
 
 model:
