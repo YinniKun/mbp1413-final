@@ -27,7 +27,7 @@ training:
   epochs: 200
   batch_size: 5
   lr: 0.001
-  optimizer: "Adam"
+  optimizer: "SGD"
   loss: "DiceFocalLoss"
   metrics: ["Dice", "IoU"]
   save_dir: ""

@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-21 20:02:58
+LastEditTime: 2024-03-14 16:47:00
 FilePath: /mbp1413-final/models/network.py
 Description: base network class for the project
 I Love IU
@@ -11,7 +11,7 @@ Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved.
 
 import torch
 import torch.nn as nn
-from .utils import DFLoss, DiceScore, JaccardLoss, plot_progress, FullDiceScore, FullJaccardLoss, make_if_dont_exist
+from .utils import PolyLRScheduler, DFLoss, DiceScore, JaccardLoss, plot_progress, FullDiceScore, FullJaccardLoss, make_if_dont_exist
 from typing import Dict, Any, Tuple, List
 import monai
 from monai.data import DataLoader
@@ -82,6 +82,7 @@ class Network(nn.Module):
         for epoch in range(self.start_epoch, self.max_epoch):
             self.epoch = epoch
             self.model.train()
+            self.lr_scheduler.step(self.epoch)
             tr_loss = []
             with tqdm(self.tr_loader, unit="batch") as tepoch:
                 for batch in tepoch:
@@ -209,8 +210,11 @@ class Network(nn.Module):
         self.jaccard_loss = JaccardLoss()
         self.full_dice_metric = FullDiceScore()
         self.full_jaccard_loss = FullJaccardLoss()
+        # ! Switch to SGD optimizer
         self.optimizer = getattr(torch.optim, self.cfg.training.optimizer)(
-            self.model.parameters(), lr=self.lr)
+            self.model.parameters(), lr=self.lr, weight_decay=3e-5, momentum=0.99, nesterov=True)
+        # ! Adapt learning scheduler from nnUnet-v2
+        self.lr_scheduler = PolyLRScheduler(self.optimizer, self.lr, self.max_epoch)
         self.train_losses, self.valid_losses, self.dscs, self.ious = [], [], [], []
         self.best_valid_loss = np.inf
         self.valid_period = self.cfg.training.val_period
