@@ -33,7 +33,7 @@ def parse_command() -> argparse.Namespace:
     parser.add_argument("-d", "--download", action="store_true", help="use this if you want to download the dataset")
     parser.add_argument("-r", "--resume", action="store_true", help="use this if you want to continue a training")
     parser.add_argument("-e", "--epochs", type=int, default=200, help="Number of epochs for training")
-    parser.add_argument("-l", "--learning_rate", type=float, default=0.001, help="Learning rate")
+    parser.add_argument("-l", "--learning_rate", type=float, default=0.005, help="Learning rate")
     parser.add_argument("-opt", "--optimizer", type=str, default="Adam", help="Optimizer of model, default is Adam")
     parser.add_argument("-sch", "--scheduler", action="store_true", help="Use this parameter to use lr scheduler")
     parser.add_argument("-no", "--normalization", action="store_true", help="Use this parameter to normalize the image as pre-processing")
