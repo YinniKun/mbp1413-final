@@ -32,5 +32,5 @@ sbatch run.sh
 
 ## Data Availability
 - The data used to train the models can be found [here](https://drive.google.com/drive/folders/1WoteojVEFCjUOUbKrQpHYqKSHY06Qn3m)
-- The unprocessed results (such as loss curves, model validation results, etc.) of this project can be found [here](https://drive.google.com/drive/folders/1Gf1jCM_4Zove3mqOsA3wmld1ZJUHG08A?usp=share_link)
+- The unprocessed results (such as loss curves, model validation results, etc.) of this project can be found [here](https://drive.google.com/drive/folders/1n3LVk6NlPQ4F6_iDpKGr-aHUV9v95QYW?usp=drive_link)
 
