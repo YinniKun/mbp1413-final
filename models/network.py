@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-03-14 16:47:00
+LastEditTime: 2024-03-14 19:12:35
 FilePath: /mbp1413-final/models/network.py
 Description: base network class for the project
 I Love IU
@@ -11,7 +11,7 @@ Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved.
 
 import torch
 import torch.nn as nn
-from .utils import PolyLRScheduler, DFLoss, DiceScore, JaccardLoss, plot_progress, FullDiceScore, FullJaccardLoss, make_if_dont_exist
+from .utils import define_name, PolyLRScheduler, DFLoss, DiceScore, JaccardLoss, plot_progress, FullDiceScore, FullJaccardLoss, make_if_dont_exist
 from typing import Dict, Any, Tuple, List
 import monai
 from monai.data import DataLoader
@@ -36,6 +36,7 @@ class Network(nn.Module):
         name: str,
         optimizer: str,
         use_sche: bool,
+        normalize: bool,
         tr_loader: DataLoader,
         val_loader: DataLoader,
         te_loader: DataLoader,
@@ -51,16 +52,18 @@ class Network(nn.Module):
         self.use_sche = use_sche
         self.optim = optimizer
         
+        train_folder_name = define_name(name, lr, epoch, optimizer, use_sche, normalize, 'train')
         # Training save dirs
-        self.training_dir = os.path.join(ROOT, f"training_{name}_{lr}_{epoch}")
+        self.training_dir = os.path.join(ROOT, train_folder_name)
         if self.cfg.training.save_dir != "":
             self.training_dir = self.cfg.training.save_dir
-        self.training_model_dir = os.path.join(self.training_dir, name)
-        self.weights_dir = os.path.join(self.training_model_dir, 'weights')
-        self.plots_dir = os.path.join(self.training_model_dir, 'plots')
+        
+        self.weights_dir = os.path.join(self.training_dir, 'weights')
+        self.plots_dir = os.path.join(self.training_dir, 'plots')
         
         # Inference save dirs
-        self.inference_dir = os.path.join(ROOT, f"inference_{name}_{lr}_{epoch}")
+        test_folder_name = define_name(name, lr, epoch, optimizer, use_sche, normalize, 'test')
+        self.inference_dir = os.path.join(ROOT, test_folder_name)
         if self.cfg.inference.predict_dir != "":
             self.inference_model_dir = self.cfg.inference.predict_dir
         self.inference_model_dir = os.path.join(self.inference_dir, name)
@@ -71,7 +74,6 @@ class Network(nn.Module):
     def init_training_dir(self) -> None:
         # Create save directory
         make_if_dont_exist(self.training_dir, overwrite=True)
-        make_if_dont_exist(self.training_model_dir, overwrite=True)
         make_if_dont_exist(self.weights_dir, overwrite=True)
         make_if_dont_exist(self.plots_dir, overwrite=True)
 
@@ -86,8 +88,6 @@ class Network(nn.Module):
         for epoch in range(self.start_epoch, self.max_epoch):
             self.epoch = epoch
             self.model.train()
-            if self.use_sche:
-                self.lr_scheduler.step(self.epoch)
             tr_loss = []
             with tqdm(self.tr_loader, unit="batch") as tepoch:
                 for batch in tepoch:
@@ -102,8 +102,13 @@ class Network(nn.Module):
                     loss.backward()
                     self.optimizer.step()
                     tr_loss.append(loss.item())
-                    tepoch.set_postfix(loss=loss.item())
+                    if self.use_sche:
+                        tepoch.set_postfix(loss=loss.item(), lr=self.lr_scheduler.get_last_lr()[-1])
+                    else:
+                        tepoch.set_postfix(loss=loss.item(), lr=self.lr)
 
+            if self.use_sche:
+                self.lr_scheduler.step(self.epoch)
             self.train_losses.append([self.epoch+1, np.mean(tr_loss, axis=0)])
 
             if (self.epoch+1) % self.valid_period == 0:
@@ -247,6 +252,8 @@ class Network(nn.Module):
         
         self.optimizer.load_state_dict(ckpt['optimizer'])
         self.model.load_state_dict(ckpt['weights'])
+        if self.use_sche:
+            self.lr_scheduler.load_state_dict(ckpt['lr_scheduler'])
         self.best_valid_loss = ckpt['best_valid_loss']
         self.train_losses = ckpt['train_losses']
         self.valid_losses = ckpt['valid_losses']
@@ -261,15 +268,30 @@ class Network(nn.Module):
         mode: str = None
     ) -> None:
         save_path = os.path.join(self.weights_dir, f'{mode}_ckpt.pth')
-        torch.save(
-            {
-                'epoch': self.epoch,
-                'weights': self.model.state_dict(),
-                'optimizer': self.optimizer.state_dict(),
-                'best_valid_loss': self.best_valid_loss,
-                'train_losses': self.train_losses,
-                'valid_losses': self.valid_losses,
-                "valid_dsc": self.dscs,
-                "valid_iou": self.ious
-            }, save_path
-        )
+        if not self.use_sche:
+            torch.save(
+                {
+                    'epoch': self.epoch,
+                    'weights': self.model.state_dict(),
+                    'optimizer': self.optimizer.state_dict(),
+                    'best_valid_loss': self.best_valid_loss,
+                    'train_losses': self.train_losses,
+                    'valid_losses': self.valid_losses,
+                    "valid_dsc": self.dscs,
+                    "valid_iou": self.ious
+                }, save_path
+            )
+        else:
+            torch.save(
+                {
+                    'epoch': self.epoch,
+                    'weights': self.model.state_dict(),
+                    'optimizer': self.optimizer.state_dict(),
+                    'lr_scheduler': self.lr_scheduler.state_dict(),
+                    'best_valid_loss': self.best_valid_loss,
+                    'train_losses': self.train_losses,
+                    'valid_losses': self.valid_losses,
+                    "valid_dsc": self.dscs,
+                    "valid_iou": self.ious
+                }, save_path
+            )

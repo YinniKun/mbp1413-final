@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:58
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-17 19:03:12
+LastEditTime: 2024-03-14 18:42:15
 FilePath: /mbp1413-final/models/unetr.py
 Description: transformer-based U-Net model for medical image segmentation
 I Love IU
@@ -27,12 +27,13 @@ class unetr(Network):
         name: str,
         optimizer: str,
         use_sche: bool,
+        normalize: bool,
         tr_loader: DataLoader,
         val_loader: DataLoader,
         te_loader: DataLoader
     ) -> None:
         super(unetr, self).__init__(cfg, lr, epoch, device, name, 
-                                    optimizer, use_sche, 
+                                    optimizer, use_sche, normalize,
                                     tr_loader, val_loader, te_loader)
         self.init_model()
         self.init_params()

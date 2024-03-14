@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-17 19:03:01
+LastEditTime: 2024-03-14 18:42:05
 FilePath: /mbp1413-final/models/unet.py
 Description: U-Net model for medical image segmentation
 I Love IU
@@ -27,12 +27,13 @@ class unet(Network):
         name: str,
         optimizer: str,
         use_sche: bool,
+        normalize: bool,
         tr_loader: DataLoader,
         val_loader: DataLoader,
         te_loader: DataLoader
     ) -> None:
         super(unet, self).__init__(cfg, lr, epoch, device, name, 
-                                   optimizer, use_sche, 
+                                   optimizer, use_sche, normalize,
                                    tr_loader, val_loader, te_loader)
         self.init_model()
         self.init_params()

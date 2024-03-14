@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:17:54
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-03-14 16:26:29
+LastEditTime: 2024-03-14 19:10:11
 FilePath: /mbp1413-final/models/utils.py
 Description: utility functions for the project
 I Love IU
@@ -43,6 +43,27 @@ def download_dataset(cfg: Dict[str, Any]) -> None:
     unzip_dataset("dataset.zip", ROOT)
     os.remove("dataset.zip")
 
+def define_name(
+    model_name: str,
+    learning_rate: float,
+    epoch: int,
+    optimizer: str,
+    scheduler: bool,
+    normalization: bool,
+    mode: str
+) -> str:
+    if mode == "train":
+        ret = 'training_'
+    elif mode == "test":
+        ret = 'inference_'
+    else:
+        raise ValueError("mode not supported")
+    ret += f"{model_name}_{learning_rate}_{epoch}_{optimizer}"
+    if scheduler:
+        ret += "_Sche"
+    if normalization:
+        ret += "_Norm"
+    return ret
 
 def make_if_dont_exist(
     folder_path: str,
@@ -111,9 +132,20 @@ def FullJaccardLoss() -> nn.Module:
 def normalize_image(x):
     if x.ndim <= 2:
         x = x.unsqueeze(0)
-    mean = torch.mean(x, axis=(1, 2), keepdims=True)
-    std = torch.std(x, axis=(1, 2), keepdims=True)
-    return (x - mean) / std
+    
+    if x.shape[0] != 4:
+        mean = torch.mean(x, axis=(1, 2), keepdims=True)
+        std = torch.std(x, axis=(1, 2), keepdims=True)
+        return (x - mean) / std
+    else: 
+        # only normalize the first 3 channels (RGB)
+        ret = torch.zeros(x.shape, dtype=x.dtype, device=x.device)
+        temp = x.clone()[:3, ...]
+        mean = torch.mean(temp, axis=(1, 2), keepdims=True)
+        std = torch.std(temp, axis=(1, 2), keepdims=True)
+        ret[:3, ...] = (temp - mean) / std
+        ret[3, ...] = x[3, ...]  
+        return ret
 
 def load_dataset(
     train_path: str,
@@ -254,7 +286,7 @@ class PolyLRScheduler(_LRScheduler):
         self.max_steps = max_steps
         self.exponent = exponent
         self.ctr = 0
-        super().__init__(optimizer, current_step if current_step is not None else -1, False)
+        super().__init__(optimizer, current_step if current_step is not None else -1)
 
     def step(self, current_step=None):
         if current_step is None or current_step == -1:
@@ -263,4 +295,6 @@ class PolyLRScheduler(_LRScheduler):
 
         new_lr = self.initial_lr * (1 - current_step / self.max_steps) ** self.exponent
         for param_group in self.optimizer.param_groups:
-            param_group['lr'] = new_lr 
+            param_group['lr'] = new_lr
+        
+        self._last_lr = [group['lr'] for group in self.optimizer.param_groups] 

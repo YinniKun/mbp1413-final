@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:24:56
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-02-29 00:20:07
+LastEditTime: 2024-03-14 18:41:17
 FilePath: /mbp1413-final/main.py
 Description: main script for the project
 I Love IU
@@ -49,10 +49,10 @@ def main() -> None:
     test_path = os.path.join(ROOT, "datasets", "test")
     tr_loader, val_loader, te_loader = load_dataset(train_path, test_path, cfg, args.normalization)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
-    
-    if args.model in modules.keys():
-        model = modules[args.model](cfg, args.learning_rate, args.epochs, device, 
-                                    args.model, args.optimizer, args.scheduler,
+    model_name = args.model.lower()
+    if model_name in modules.keys():
+        model = modules[model_name](cfg, args.learning_rate, args.epochs, device, 
+                                    args.model, args.optimizer, args.scheduler, args.normalization,
                                     tr_loader, val_loader, te_loader)
     else:
         raise ValueError("model not supported")
