@@ -118,7 +118,8 @@ def normalize_image(x):
 def load_dataset(
     train_path: str,
     test_path: str,
-    cfg: Dict[str, Any]
+    cfg: Dict[str, Any],
+    do_normalization: bool,
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     # create a dic with directory of images and masks
     train_files = [{"image": img, "label": mask} for img, mask in 
@@ -128,30 +129,54 @@ def load_dataset(
                   zip(sorted(glob.glob(os.path.join(test_path, "images/*.png"))), 
                       sorted(glob.glob(os.path.join(test_path, "masks/*.png"))))]
     # define transforms
-    transforms = Compose(
-        [
-            # ! Load image and label data with grayscale/RGB converter
-            # L: Grayscale
-            # RGB: Red, Green, Blue
-            # LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader', converter=lambda image: image.convert("L")), #png files loaded as PIL image
-            LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader'), #png files loaded as PIL image
-            # Ensure channel is the first dimension
-            EnsureChannelFirstd(keys=["image", "label"]),
-            # convert to grey scale for consistency
-            Lambdad(keys=["image"], func=normalize_image),
-            # resize images and masks with scaling
-            Resized(keys=["image", "label"], spatial_size=(512, 512), mode=("linear", "nearest")),
-            # Scale intensity values of the image within the specified range
-            ScaleIntensityRanged(
-                keys=["image"],
-                a_min=-57,
-                a_max=164,
-                b_min=0.0,
-                b_max=1.0,
-                clip=True,
-            )
-        ]
-    )
+    if do_normalization:
+        transforms = Compose(
+            [
+                # ! Load image and label data with grayscale/RGB converter
+                # L: Grayscale
+                # RGB: Red, Green, Blue
+                # LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader', converter=lambda image: image.convert("L")), #png files loaded as PIL image
+                LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader'), #png files loaded as PIL image
+                # Ensure channel is the first dimension
+                EnsureChannelFirstd(keys=["image", "label"]),
+                # Image Normalization
+                Lambdad(keys=["image"], func=normalize_image),
+                # resize images and masks with scaling
+                Resized(keys=["image", "label"], spatial_size=(512, 512), mode=("linear", "nearest")),
+                # Scale intensity values of the image within the specified range
+                ScaleIntensityRanged(
+                    keys=["image"],
+                    a_min=-57,
+                    a_max=164,
+                    b_min=0.0,
+                    b_max=1.0,
+                    clip=True,
+                )
+            ]
+        )
+    else:
+        transforms = Compose(
+            [
+                # ! Load image and label data with grayscale/RGB converter
+                # L: Grayscale
+                # RGB: Red, Green, Blue
+                # LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader', converter=lambda image: image.convert("L")), #png files loaded as PIL image
+                LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader'), #png files loaded as PIL image
+                # Ensure channel is the first dimension
+                EnsureChannelFirstd(keys=["image", "label"]),
+                # resize images and masks with scaling
+                Resized(keys=["image", "label"], spatial_size=(512, 512), mode=("linear", "nearest")),
+                # Scale intensity values of the image within the specified range
+                ScaleIntensityRanged(
+                    keys=["image"],
+                    a_min=-57,
+                    a_max=164,
+                    b_min=0.0,
+                    b_max=1.0,
+                    clip=True,
+                )
+            ]
+        )
     # load datasets
     tran_size = int(0.8 * len(train_files))
     val_size = len(train_files) - tran_size

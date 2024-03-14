@@ -25,11 +25,15 @@ class unet(Network):
         epoch: int,
         device: torch.device,
         name: str,
+        optimizer: str,
+        use_sche: bool,
         tr_loader: DataLoader,
         val_loader: DataLoader,
         te_loader: DataLoader
     ) -> None:
-        super(unet, self).__init__(cfg, lr, epoch, device, name, tr_loader, val_loader, te_loader)
+        super(unet, self).__init__(cfg, lr, epoch, device, name, 
+                                   optimizer, use_sche, 
+                                   tr_loader, val_loader, te_loader)
         self.init_model()
         self.init_params()
         

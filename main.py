@@ -34,7 +34,9 @@ def parse_command() -> argparse.Namespace:
     parser.add_argument("-r", "--resume", action="store_true", help="use this if you want to continue a training")
     parser.add_argument("-e", "--epochs", type=int, default=200, help="Number of epochs for training")
     parser.add_argument("-l", "--learning_rate", type=float, default=0.001, help="Learning rate")
-    parser.add_argument("-t", "--title", type=str, default="Model", help="Title of the model")
+    parser.add_argument("-opt", "--optimizer", type=str, default="Adam", help="Optimizer of model, default is Adam")
+    parser.add_argument("-sch", "--scheduler", action="store_true", help="Use this parameter to use lr scheduler")
+    parser.add_argument("-no", "--normalization", action="store_true", help="Use this parameter to normalize the image as pre-processing")
     return parser.parse_args()
 
 def main() -> None:
@@ -45,11 +47,13 @@ def main() -> None:
         download_dataset(cfg)
     train_path = os.path.join(ROOT, "datasets", "train")
     test_path = os.path.join(ROOT, "datasets", "test")
-    tr_loader, val_loader, te_loader = load_dataset(train_path, test_path, cfg)
+    tr_loader, val_loader, te_loader = load_dataset(train_path, test_path, cfg, args.normalization)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # use GPU if available
     
     if args.model in modules.keys():
-        model = modules[args.model](cfg, args.learning_rate, args.epochs, device, args.model, tr_loader, val_loader, te_loader)
+        model = modules[args.model](cfg, args.learning_rate, args.epochs, device, 
+                                    args.model, args.optimizer, args.scheduler,
+                                    tr_loader, val_loader, te_loader)
     else:
         raise ValueError("model not supported")
     

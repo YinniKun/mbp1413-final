@@ -34,6 +34,8 @@ class Network(nn.Module):
         epoch: int,
         device: torch.device,
         name: str,
+        optimizer: str,
+        use_sche: bool,
         tr_loader: DataLoader,
         val_loader: DataLoader,
         te_loader: DataLoader,
@@ -46,6 +48,8 @@ class Network(nn.Module):
         self.tr_loader = tr_loader
         self.val_loader = val_loader
         self.te_loader = te_loader
+        self.use_sche = use_sche
+        self.optim = optimizer
         
         # Training save dirs
         self.training_dir = os.path.join(ROOT, f"training_{name}_{lr}_{epoch}")
@@ -82,7 +86,8 @@ class Network(nn.Module):
         for epoch in range(self.start_epoch, self.max_epoch):
             self.epoch = epoch
             self.model.train()
-            self.lr_scheduler.step(self.epoch)
+            if self.use_sche:
+                self.lr_scheduler.step(self.epoch)
             tr_loss = []
             with tqdm(self.tr_loader, unit="batch") as tepoch:
                 for batch in tepoch:
@@ -210,11 +215,16 @@ class Network(nn.Module):
         self.jaccard_loss = JaccardLoss()
         self.full_dice_metric = FullDiceScore()
         self.full_jaccard_loss = FullJaccardLoss()
-        # ! Switch to SGD optimizer
-        self.optimizer = getattr(torch.optim, self.cfg.training.optimizer)(
-            self.model.parameters(), lr=self.lr, weight_decay=3e-5, momentum=0.99, nesterov=True)
-        # ! Adapt learning scheduler from nnUnet-v2
-        self.lr_scheduler = PolyLRScheduler(self.optimizer, self.lr, self.max_epoch)
+        if self.optim == "SGD":
+            # ! Switch to SGD optimizer
+            self.optimizer = getattr(torch.optim, "SGD")(
+                self.model.parameters(), lr=self.lr, weight_decay=3e-5, momentum=0.99, nesterov=True)
+        else:
+            self.optimizer = getattr(torch.optim, "Adam")(
+             self.model.parameters(), lr=self.lr)
+        if self.use_sche:
+            # ! Adapt learning scheduler from nnUnet-v2
+            self.lr_scheduler = PolyLRScheduler(self.optimizer, self.lr, self.max_epoch)
         self.train_losses, self.valid_losses, self.dscs, self.ious = [], [], [], []
         self.best_valid_loss = np.inf
         self.valid_period = self.cfg.training.val_period
