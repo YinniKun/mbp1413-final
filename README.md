@@ -26,7 +26,7 @@ python main.py
 -mo unetr # the model to be trained/tested, default is "unet"
 -sch # flag for using lr_scheduler
 -no # flag for using intensity normalization
--opt optimizer # deafult is "Adam", can be "SGD" or "Adam"
+-opt SGD # deafult is "Adam", can be "SGD" or "Adam"
 ```
 To run on Compute Canada, use:
 ```bash
