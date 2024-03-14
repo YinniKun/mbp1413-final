@@ -28,6 +28,7 @@ python main.py
 -no # flag for using intensity normalization
 -opt SGD # deafult is "Adam", can be "SGD" or "Adam"
 ```
+Detailed information can be shown using ```-h```\
 To run on Compute Canada, use:
 ```bash
 sbatch run.sh
