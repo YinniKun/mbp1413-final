@@ -23,10 +23,10 @@ python main.py
 -r # flag for resuming the training process. Action won't be triggered if not using this flag
 -e 200 # the epochs number, default is 200
 -l 0.005 # the learning rate, default is 0.005 
--mo unetr # the model to be trained/tested, default is "unet"
+-mo unetr # the model to be trained/tested, default is unet
 -sch # flag for using lr_scheduler
 -no # flag for using intensity normalization
--opt SGD # deafult is "Adam", can be "SGD" or "Adam"
+-opt SGD # deafult is Adam, can be SGD or Adam
 ```
 Detailed information can be shown using ```-h```\
 To run on Compute Canada, use:
