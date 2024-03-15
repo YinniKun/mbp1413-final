@@ -41,7 +41,7 @@ python -u main.py -c config.yaml -e 200 -l 0.005 -mo "unet" -opt "SGD"
 python -u main.py -c config.yaml -m "test" -e 200 -l 0.005 -mo "unet" -opt "SGD"
 echo "Training and testing UNeTr"
 python -u main.py -c config.yaml -e 200 -l 0.005 -mo "unetr" -opt "SGD" 
-python -u main.py -c config.yaml -m "test" -e 200 -l 0.005 -mo "unetr" -opt "Adam"
+python -u main.py -c config.yaml -m "test" -e 200 -l 0.005 -mo "unetr" -opt "SGD"
 
 echo "Exp 6"
 echo "Training and testing UNet"
@@ -49,7 +49,7 @@ python -u main.py -c config.yaml -e 200 -l 0.005 -mo "unet" -opt "SGD" -sch
 python -u main.py -c config.yaml -m "test" -e 200 -l 0.005 -mo "unet" -opt "SGD" -sch
 echo "Training and testing UNeTr"
 python -u main.py -c config.yaml -e 200 -l 0.005 -mo "unetr" -opt "SGD" -sch
-python -u main.py -c config.yaml -m "test" -e 200 -l 0.005 -mo "unetr" -opt "Adam" -sch
+python -u main.py -c config.yaml -m "test" -e 200 -l 0.005 -mo "unetr" -opt "SGD" -sch
 
 echo "Exp 7"
 echo "Training and testing UNet"
@@ -57,7 +57,7 @@ python -u main.py -c config.yaml -e 200 -l 0.005 -mo "unet" -opt "SGD" -no
 python -u main.py -c config.yaml -m "test" -e 200 -l 0.005 -mo "unet" -opt "SGD" -no
 echo "Training and testing UNeTr"
 python -u main.py -c config.yaml -e 200 -l 0.005 -mo "unetr" -opt "SGD" -no
-python -u main.py -c config.yaml -m "test" -e 200 -l 0.005 -mo "unetr" -opt "Adam" -no
+python -u main.py -c config.yaml -m "test" -e 200 -l 0.005 -mo "unetr" -opt "SGD" -no
 
 echo "Exp 8"
 echo "Training and testing UNet"
@@ -65,7 +65,7 @@ python -u main.py -c config.yaml -e 200 -l 0.005 -mo "unet" -opt "SGD" -no -sch
 python -u main.py -c config.yaml -m "test" -e 200 -l 0.005 -mo "unet" -opt "SGD" -no -sch
 echo "Training and testing UNeTr"
 python -u main.py -c config.yaml -e 200 -l 0.005 -mo "unetr" -opt "SGD" -no -sch
-python -u main.py -c config.yaml -m "test" -e 200 -l 0.005 -mo "unetr" -opt "Adam" -no -sch
+python -u main.py -c config.yaml -m "test" -e 200 -l 0.005 -mo "unetr" -opt "SGD" -no -sch
 
 echo "Exp 1"
 echo "Training and testing UNet"
