@@ -1,10 +1,14 @@
-# mbp1413-final
-Final project for MBP1413 Winter 2024, by Richard, Sylvia, and Chris. 
+# Evaluating and Optimizing Training and Interference Performances Between Variations of UNET Models for Nuclei Detection and Segmentation
+This is the repo for the final project of MBP1413 Winter 2024, by Richard, Sylvia, and Chris. 
 
 ## Description
-In this project, we look at the performance between different models of UNet (specifically, UNet and UNet-R) for general nuclei segmentation from various imaging modalities.
+In this project, we looked at the performance between different models of UNet (specifically, UNet and UNet-R) for general nuclei segmentation from various imaging modalities and tried to optimize the model performances with various data processing methods and hyperparameter tuning.
 
-This repo contains the report (named `final-report.pdf`) and the presentation (named `final-presentation.pdf`) for this project. The codes used to generate the results used in the report and presentation are also found in this repo.
+For details of the findings, please refer to the report (named `final-report.pdf`) and the presentation (named `final-presentation.pdf`) for this project in this repo. The codes used to generate the results used in the report and presentation are also found in this repo.
+
+## Data Availability
+- The data used to train the models can be found [here](https://drive.google.com/drive/folders/1WoteojVEFCjUOUbKrQpHYqKSHY06Qn3m)
+- The unprocessed results (such as loss curves, model validation results, etc.) of this project can be found [here](https://drive.google.com/drive/folders/1n3LVk6NlPQ4F6_iDpKGr-aHUV9v95QYW?usp=drive_link)
 
 ## Environment Installation
 ```bash
@@ -33,8 +37,4 @@ To run on Compute Canada, use:
 ```bash
 sbatch run.sh
 ```
-
-## Data Availability
-- The data used to train the models can be found [here](https://drive.google.com/drive/folders/1WoteojVEFCjUOUbKrQpHYqKSHY06Qn3m)
-- The unprocessed results (such as loss curves, model validation results, etc.) of this project can be found [here](https://drive.google.com/drive/folders/1n3LVk6NlPQ4F6_iDpKGr-aHUV9v95QYW?usp=drive_link)
 
