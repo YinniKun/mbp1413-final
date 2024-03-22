@@ -7,8 +7,7 @@ In this project, we looked at the performance between different models of UNet (
 For details of the findings, please refer to the report (named `final-report.pdf`) and the presentation (named `final-presentation.pdf`) for this project in this repo. The codes used to generate the results used in the report and presentation are also found in this repo.
 
 ## Data Availability
-- The data used to train the models can be found [here](https://drive.google.com/drive/folders/1WoteojVEFCjUOUbKrQpHYqKSHY06Qn3m)
-- The unprocessed results (such as loss curves, model validation results, etc.) of this project can be found [here](https://drive.google.com/drive/folders/1n3LVk6NlPQ4F6_iDpKGr-aHUV9v95QYW?usp=drive_link)
+The data used to train the models, as well as the unprocessed results (such as loss curves, model validation results, etc.) of this project can be found [at this Google Drive](https://drive.google.com/drive/folders/1Gf1jCM_4Zove3mqOsA3wmld1ZJUHG08A?usp=sharing)
 
 ## Environment Installation
 ```bash
