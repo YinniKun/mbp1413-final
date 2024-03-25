@@ -21,7 +21,7 @@ To run locally, use:
 ```python
 python main.py
 -c /path/to/config/yaml/file
--m mode # default is train, can be train or test
+-m train # default is train, can be train or test
 -d # flag for downloading dataset. Action won't be triggered if not using this flag
 -r # flag for resuming the training process. Action won't be triggered if not using this flag
 -e 200 # the epochs number, default is 200
