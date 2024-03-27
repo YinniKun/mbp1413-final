@@ -11,7 +11,7 @@ The data used to train the models, as well as the unprocessed results (such as l
 
 ## Environment Installation
 ```bash
-cd /path/to/mbp1413-final
+git clone https://github.com/YinniKun/mbp1413-final.git && cd mbp1413-final
 conda-env create -f environment.yml
 conda activate monai
 ```
