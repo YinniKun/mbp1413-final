@@ -28,7 +28,6 @@ python main.py
 -l 0.005 # the learning rate, default is 0.005 
 -mo unetr # the model to be trained/tested, default is unet
 -sch # flag for using lr_scheduler
--no # flag for using intensity normalization
 -opt SGD # deafult is Adam, can be SGD or Adam
 ```
 Detailed information can be shown using ```-h```\
