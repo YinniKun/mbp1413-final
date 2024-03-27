@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:24:56
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-03-27 01:04:57
+LastEditTime: 2024-03-27 02:59:48
 FilePath: /mbp1413-final/main.py
 Description: main script for the project
 I Love IU
@@ -45,8 +45,6 @@ def parse_command() -> argparse.Namespace:
                         default="Adam", help="Optimizer of model, default is Adam")
     parser.add_argument("-sch", "--scheduler", action="store_true",
                         help="Use this parameter to use lr scheduler")
-    parser.add_argument("-no", "--normalization", action="store_true",
-                        help="Use this parameter to normalize the image as pre-processing")
     return parser.parse_args()
 
 
@@ -58,13 +56,12 @@ def main() -> None:
         download_dataset(cfg)
     train_path = os.path.join(ROOT, "datasets", "train")
     test_path = os.path.join(ROOT, "datasets", "test")
-    tr_loader, val_loader, te_loader = load_dataset(
-        train_path, test_path, cfg, args.normalization)
+    tr_loader, val_loader, te_loader = load_dataset(train_path, test_path, cfg)
     device = check_device(cfg)
     model_name = args.model.lower()
     if model_name in modules.keys():
         model = modules[model_name](cfg, args.learning_rate, args.epochs, device,
-                                    args.model, args.optimizer, args.scheduler, args.normalization,
+                                    args.model, args.optimizer, args.scheduler,
                                     tr_loader, val_loader, te_loader)
     else:
         raise ValueError("model not supported")

@@ -2,16 +2,14 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:17:54
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-03-27 01:04:23
+LastEditTime: 2024-03-27 03:18:30
 FilePath: /mbp1413-final/models/utils.py
 Description: utility functions for the project
 I Love IU
 Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved. 
 '''
 from pathlib import Path
-from PIL import Image
 import numpy as np
-import matplotlib.pyplot as plt
 import monai
 from monai.data import DataLoader, CacheDataset
 from monai.transforms import (
@@ -19,8 +17,7 @@ from monai.transforms import (
     Compose,
     LoadImaged,
     ScaleIntensityRanged,
-    Resized,
-    Lambdad
+    Resized
 )
 import torch
 import torch.nn as nn
@@ -31,6 +28,7 @@ import gdown
 import shutil
 import zipfile
 from typing import Tuple, Dict, Any, Sequence, Union
+import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
 
@@ -52,7 +50,6 @@ def define_name(
     epoch: int,
     optimizer: str,
     scheduler: bool,
-    normalization: bool,
     mode: str
 ) -> str:
     if mode == "train":
@@ -64,8 +61,7 @@ def define_name(
     ret += f"{model_name}_{learning_rate}_{epoch}_{optimizer}"
     if scheduler:
         ret += "_Sche"
-    if normalization:
-        ret += "_Norm"
+
     return ret
 
 
@@ -137,30 +133,10 @@ def FullJaccardLoss() -> nn.Module:
     return score
 
 
-def normalize_image(x):
-    if x.ndim <= 2:
-        x = x.unsqueeze(0)
-
-    if x.shape[0] != 4:
-        mean = torch.mean(x, axis=(1, 2), keepdims=True)
-        std = torch.std(x, axis=(1, 2), keepdims=True)
-        return (x - mean) / std
-    else:
-        # only normalize the first 3 channels (RGB)
-        ret = torch.zeros(x.shape, dtype=x.dtype, device=x.device)
-        temp = x.clone()[:3, ...]
-        mean = torch.mean(temp, axis=(1, 2), keepdims=True)
-        std = torch.std(temp, axis=(1, 2), keepdims=True)
-        ret[:3, ...] = (temp - mean) / std
-        ret[3, ...] = x[3, ...]
-        return ret
-
-
 def load_dataset(
     train_path: str,
     test_path: str,
-    cfg: Dict[str, Any],
-    do_normalization: bool,
+    cfg: Dict[str, Any]
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     # create a dic with directory of images and masks
     train_files = [{"image": img, "label": mask} for img, mask in
@@ -170,85 +146,46 @@ def load_dataset(
                   zip(sorted(glob.glob(os.path.join(test_path, "images/*.png"))),
                       sorted(glob.glob(os.path.join(test_path, "masks/*.png"))))]
     # define transforms
-    if do_normalization:
-        transforms = Compose(
-            [
-                # ! Load image and label data with grayscale/RGB converter
-                # L: Grayscale
-                # RGB: Red, Green, Blue
-                # LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader', converter=lambda image: image.convert("L")), #png files loaded as PIL image
-                # png files loaded as PIL image
-                LoadImaged(keys=["image", "label"],
-                           image_only=False, reader='PILReader'),
-                # Ensure channel is the first dimension
-                EnsureChannelFirstd(keys=["image", "label"]),
-                # Image Normalization
-                Lambdad(keys=["image"], func=normalize_image),
-                # resize images and masks with scaling
-                Resized(keys=["image", "label"], spatial_size=(
-                    512, 512), mode=("linear", "nearest")),
-                # Scale intensity values of the image within the specified range
-                ScaleIntensityRanged(
-                    keys=["image"],
-                    a_min=-57,
-                    a_max=164,
-                    b_min=0.0,
-                    b_max=1.0,
-                    clip=True,
-                )
-            ]
-        )
-    else:
-        transforms = Compose(
-            [
-                # ! Load image and label data with grayscale/RGB converter
-                # L: Grayscale
-                # RGB: Red, Green, Blue
-                # LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader', converter=lambda image: image.convert("L")), #png files loaded as PIL image
-                # png files loaded as PIL image
-                LoadImaged(keys=["image", "label"],
-                           image_only=False, reader='PILReader'),
-                # Ensure channel is the first dimension
-                EnsureChannelFirstd(keys=["image", "label"]),
-                # resize images and masks with scaling
-                Resized(keys=["image", "label"], spatial_size=(
-                    512, 512), mode=("linear", "nearest")),
-                # Scale intensity values of the image within the specified range
-                ScaleIntensityRanged(
-                    keys=["image"],
-                    a_min=-57,
-                    a_max=164,
-                    b_min=0.0,
-                    b_max=1.0,
-                    clip=True,
-                )
-            ]
-        )
-    # load datasets
+    transforms = Compose(
+        [
+            # png files loaded as PIL image, image is RGBA and mask is Grayscale
+            LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader'),
+            # Ensure channel is the first dimension
+            EnsureChannelFirstd(keys=["image", "label"]),
+            # resize images and masks with scaling
+            Resized(keys=["image", "label"], spatial_size=(512, 512), mode=("linear", "nearest")),
+            # Scale intensity values of the image within the specified range
+            ScaleIntensityRanged(
+                keys=["image"],
+                a_min=-57,
+                a_max=164,
+                b_min=0.0,
+                b_max=1.0,
+                clip=True,
+            )
+        ]
+    )
+    # split & load datasets
     tran_size = int(0.8 * len(train_files))
     val_size = len(train_files) - tran_size
-    train_data, val_data = torch.utils.data.random_split(
-        train_files, [tran_size, val_size])
+    train_data, val_data = torch.utils.data.random_split(train_files, [tran_size, val_size])
     print(f"Training data size: {len(train_data)}")
     print(f"Validation data size: {len(val_data)}")
 
     tr_loader = DataLoader(
-        CacheDataset(train_data, transform=transforms,
-                     cache_num=16, hash_as_key=True),
+        CacheDataset(train_data, transform=transforms, cache_num=16, hash_as_key=True),
         batch_size=cfg.training.batch_size,
         shuffle=True,
         num_workers=cfg.training.num_workers
     )
     val_loader = DataLoader(
-        CacheDataset(val_data, transform=transforms,
-                     cache_num=16, hash_as_key=True),
+        CacheDataset(val_data, transform=transforms, cache_num=16, hash_as_key=True),
         batch_size=cfg.training.batch_size,
         shuffle=False,
         num_workers=cfg.training.num_workers
     )
     te_loader = DataLoader(
-        CacheDataset(test_files, transform=transforms,
-                     cache_num=16, hash_as_key=True),
+        CacheDataset(test_files, transform=transforms, cache_num=16, hash_as_key=True),
         batch_size=1,
         shuffle=False,
         num_workers=cfg.training.num_workers
@@ -305,6 +242,14 @@ def plot_progress(
 
 
 def check_device(cfg: Dict[str, Any]) -> torch.device:
+    """_summary_
+
+    Args:
+        cfg (Dict[str, Any]): configuration
+
+    Returns:
+        torch.device: device for training either cuda for nvidia gpu, mps for Apple mps or cpu
+    """
     if cfg.training.device == "cuda" and torch.cuda.is_available():
         device = torch.device("cuda")
     elif cfg.training.device == "mps" and torch.backends.mps.is_available():
@@ -316,7 +261,23 @@ def check_device(cfg: Dict[str, Any]) -> torch.device:
 
 
 class PolyLRScheduler(_LRScheduler):
-    def __init__(self, optimizer, initial_lr: float, max_steps: int, exponent: float = 0.9, current_step: int = None):
+    def __init__(
+        self, 
+        optimizer: torch.optim, 
+        initial_lr: float, 
+        max_steps: int, 
+        exponent: float = 0.9, 
+        current_step: int = None
+    ) -> None:
+        """_summary_
+
+        Args:
+            optimizer (torch.optim): training optimizer
+            initial_lr (float): initial learning rate
+            max_steps (int): number of training epochs
+            exponent (float, optional): exponential value to decrease learning rate. Defaults to 0.9.
+            current_step (int, optional): current epoch. Defaults to None.
+        """
         self.optimizer = optimizer
         self.initial_lr = initial_lr
         self.max_steps = max_steps
@@ -324,7 +285,10 @@ class PolyLRScheduler(_LRScheduler):
         self.ctr = 0
         super().__init__(optimizer, current_step if current_step is not None else -1)
 
-    def step(self, current_step=None):
+    def step(
+        self, 
+        current_step: int = None
+    ):
         if current_step is None or current_step == -1:
             current_step = self.ctr
             self.ctr += 1

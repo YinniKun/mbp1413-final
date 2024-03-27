@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-03-27 00:56:41
+LastEditTime: 2024-03-27 03:00:30
 FilePath: /mbp1413-final/models/unet.py
 Description: U-Net model for medical image segmentation
 I Love IU
@@ -13,7 +13,7 @@ import torch
 from monai.data import DataLoader
 from .network import Network
 from typing import Dict, Any
-import os
+
 
 class unet(Network):
     def __init__(
@@ -25,17 +25,16 @@ class unet(Network):
         name: str,
         optimizer: str,
         use_sche: bool,
-        normalize: bool,
         tr_loader: DataLoader,
         val_loader: DataLoader,
         te_loader: DataLoader
     ) -> None:
-        super(unet, self).__init__(cfg, lr, epoch, device, name, 
-                                   optimizer, use_sche, normalize,
+        super(unet, self).__init__(cfg, lr, epoch, device, name,
+                                   optimizer, use_sche,
                                    tr_loader, val_loader, te_loader)
         self.init_model()
         self.init_params()
-        
+
     def init_model(self) -> None:
         # Create U-Net model
         self.model = monai.networks.nets.UNet(
@@ -50,4 +49,3 @@ class unet(Network):
             norm=self.cfg.model.normalization,
             dropout=self.cfg.model.dropout,
         ).to(self.device)
-    

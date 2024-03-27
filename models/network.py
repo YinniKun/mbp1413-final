@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-03-27 00:56:31
+LastEditTime: 2024-03-27 03:11:02
 FilePath: /mbp1413-final/models/network.py
 Description: base network class for the project
 I Love IU
@@ -21,7 +21,6 @@ import os
 import json
 from PIL import Image
 from pathlib import Path
-from omegaconf import OmegaConf
 
 ROOT = Path(os.path.dirname(os.path.realpath(__file__))).parent
 
@@ -36,7 +35,6 @@ class Network(nn.Module):
         name: str,
         optimizer: str,
         use_sche: bool,
-        normalize: bool,
         tr_loader: DataLoader,
         val_loader: DataLoader,
         te_loader: DataLoader,
@@ -51,18 +49,20 @@ class Network(nn.Module):
         self.te_loader = te_loader
         self.use_sche = use_sche
         self.optim = optimizer
-        
-        train_folder_name = define_name(name, lr, epoch, optimizer, use_sche, normalize, 'train')
+
+        train_folder_name = define_name(
+            name, lr, epoch, optimizer, use_sche, 'train')
         # Training save dirs
         self.training_dir = os.path.join(ROOT, train_folder_name)
         if self.cfg.training.save_dir != "":
             self.training_dir = self.cfg.training.save_dir
-        
+
         self.weights_dir = os.path.join(self.training_dir, 'weights')
         self.plots_dir = os.path.join(self.training_dir, 'plots')
-        
+
         # Inference save dirs
-        test_folder_name = define_name(name, lr, epoch, optimizer, use_sche, normalize, 'test')
+        test_folder_name = define_name(
+            name, lr, epoch, optimizer, use_sche, 'test')
         self.inference_dir = os.path.join(ROOT, test_folder_name)
         if self.cfg.inference.predict_dir != "":
             self.inference_model_dir = self.cfg.inference.predict_dir
@@ -70,19 +70,17 @@ class Network(nn.Module):
 
     def init_model(self) -> None:
         pass
-    
+
     def init_training_dir(self) -> None:
         # Create save directory
         make_if_dont_exist(self.training_dir, overwrite=True)
         make_if_dont_exist(self.weights_dir, overwrite=True)
         make_if_dont_exist(self.plots_dir, overwrite=True)
 
-
     def init_inference_dir(self) -> None:
         # Create save directory
         make_if_dont_exist(self.inference_dir, overwrite=True)
         make_if_dont_exist(self.inference_model_dir, overwrite=True)
-
 
     def train(self) -> None:
         for epoch in range(self.start_epoch, self.max_epoch):
@@ -96,14 +94,15 @@ class Network(nn.Module):
                     self.optimizer.zero_grad()
                     x, y = batch["image"].to(
                         self.device), batch["label"].to(self.device)
-                    y[y != 0] = 1 # convert to binary mask
+                    y[y != 0] = 1  # convert to binary mask
                     y_pred = self.model(x)
                     loss = self.loss(y_pred, y)
                     loss.backward()
                     self.optimizer.step()
                     tr_loss.append(loss.item())
                     if self.use_sche:
-                        tepoch.set_postfix(loss=loss.item(), lr=self.lr_scheduler.get_last_lr()[-1])
+                        tepoch.set_postfix(
+                            loss=loss.item(), lr=self.lr_scheduler.get_last_lr()[-1])
                     else:
                         tepoch.set_postfix(loss=loss.item(), lr=self.lr)
 
@@ -123,7 +122,7 @@ class Network(nn.Module):
                                 f"Epoch {epoch+1}/{self.max_epoch} Validation")
                             x, y = batch["image"].to(
                                 self.device), batch["label"].to(self.device)
-                            y[y != 0] = 1 # convert to binary mask
+                            y[y != 0] = 1  # convert to binary mask
                             y_pred = self.model(x)
                             y_pred_logits = torch.argmax(torch.softmax(
                                 y_pred, dim=1), dim=1, keepdim=True)
@@ -137,7 +136,8 @@ class Network(nn.Module):
                             tepoch.set_postfix(
                                 loss=loss.item(), dice=dice_score.item(), iou=iou_score.item())
 
-                self.valid_losses.append([self.epoch+1, np.mean(val_loss, axis=0)])
+                self.valid_losses.append(
+                    [self.epoch+1, np.mean(val_loss, axis=0)])
                 self.dscs.append([self.epoch+1, np.mean(val_dsc, axis=0)])
                 self.ious.append([self.epoch+1, np.mean(val_iou, axis=0)])
 
@@ -146,7 +146,8 @@ class Network(nn.Module):
                     self.save_checkpoint(mode="best")
 
             self.save_checkpoint(mode="last")
-            plot_progress(self.plots_dir, self.train_losses, self.valid_losses, self.dscs, self.ious, "loss")
+            plot_progress(self.plots_dir, self.train_losses,
+                          self.valid_losses, self.dscs, self.ious, "loss")
 
     def test(self) -> None:
         results = {}
@@ -162,17 +163,19 @@ class Network(nn.Module):
                     tepoch.set_description("Model Inference")
                     x, y = batch["image"].to(
                         self.device), batch["label"].to(self.device)
-                    y[y != 0] = 1 # convert to binary mask
+                    y[y != 0] = 1  # convert to binary mask
                     y_pred = self.model(x)
-                    y_pred_label = torch.argmax(torch.softmax(y_pred, dim=1), dim=1, keepdim=True)
-                    y_pred_label_numpy = y_pred_label.detach().cpu().numpy().astype(np.uint8)[0,0,...]
+                    y_pred_label = torch.argmax(torch.softmax(
+                        y_pred, dim=1), dim=1, keepdim=True)
+                    y_pred_label_numpy = y_pred_label.detach(
+                    ).cpu().numpy().astype(np.uint8)[0, 0, ...]
                     y_pred_label_numpy[y_pred_label_numpy != 0] = 255
                     seg = Image.fromarray(y_pred_label_numpy)
                     seg.save(os.path.join(self.inference_model_dir, filename))
                     y_pred_class = monai.networks.utils.one_hot(
                         y_pred_label, num_classes=self.cfg.model.out_channels)
                     dice_score, iou_score = self.full_score(y_pred_class, y)
-                    
+
                     list_dsc = dice_score.detach().cpu().numpy().astype(np.float64).tolist()
                     list_iou = iou_score.detach().cpu().numpy().astype(np.float64).tolist()
                     dscs.append(list_dsc)
@@ -226,10 +229,11 @@ class Network(nn.Module):
                 self.model.parameters(), lr=self.lr, weight_decay=3e-5, momentum=0.99, nesterov=True)
         else:
             self.optimizer = getattr(torch.optim, "Adam")(
-             self.model.parameters(), lr=self.lr)
+                self.model.parameters(), lr=self.lr)
         if self.use_sche:
             # ! Adapt learning scheduler from nnUnet-v2
-            self.lr_scheduler = PolyLRScheduler(self.optimizer, self.lr, self.max_epoch)
+            self.lr_scheduler = PolyLRScheduler(
+                self.optimizer, self.lr, self.max_epoch)
         self.train_losses, self.valid_losses, self.dscs, self.ious = [], [], [], []
         self.best_valid_loss = np.inf
         self.valid_period = self.cfg.training.val_period
@@ -239,9 +243,11 @@ class Network(nn.Module):
         self,
         mode: str = None,
     ) -> None:
-       
-        assert os.path.exists(os.path.join(self.weights_dir, f'{mode}_ckpt.pth')), f"{mode.capitalize()} checkpoint not found !!!"
-        ckpt = torch.load(os.path.join(self.weights_dir, f'{mode}_ckpt.pth'), map_location=self.device)
+
+        assert os.path.exists(os.path.join(
+            self.weights_dir, f'{mode}_ckpt.pth')), f"{mode.capitalize()} checkpoint not found !!!"
+        ckpt = torch.load(os.path.join(self.weights_dir,
+                          f'{mode}_ckpt.pth'), map_location=self.device)
 
         # if ckpt_path == "":
         #     assert os.path.exists(os.path.join(self.weights_dir, f'{mode}_ckpt.pth')), f"{mode.capitalize()} checkpoint not found !!!"
@@ -249,7 +255,7 @@ class Network(nn.Module):
         # else:
         #     assert os.path.exists(ckpt_path), "Checkpoint not found !!!"
         #     ckpt = torch.load(ckpt_path, map_location=self.device)
-        
+
         self.optimizer.load_state_dict(ckpt['optimizer'])
         self.model.load_state_dict(ckpt['weights'])
         if self.use_sche:
@@ -261,7 +267,6 @@ class Network(nn.Module):
         self.start_epoch = ckpt['epoch'] + 1
         self.dscs = ckpt['valid_dsc']
         self.ious = ckpt['valid_iou']
-            
 
     def save_checkpoint(
         self,
