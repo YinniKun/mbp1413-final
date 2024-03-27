@@ -29,6 +29,7 @@ training:
   save_dir: ""
   val_period: 5
   num_workers: 8
+  device: "mps"
 
 inference:
   model_dir: ""

@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-03-14 18:42:05
+LastEditTime: 2024-03-27 00:56:41
 FilePath: /mbp1413-final/models/unet.py
 Description: U-Net model for medical image segmentation
 I Love IU
@@ -10,12 +10,10 @@ Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved.
 '''
 import monai
 import torch
-import torch.nn as nn
 from monai.data import DataLoader
 from .network import Network
 from typing import Dict, Any
 import os
-from omegaconf import OmegaConf
 
 class unet(Network):
     def __init__(

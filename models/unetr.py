@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:58
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-03-14 18:42:15
+LastEditTime: 2024-03-27 00:56:50
 FilePath: /mbp1413-final/models/unetr.py
 Description: transformer-based U-Net model for medical image segmentation
 I Love IU
@@ -10,11 +10,9 @@ Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved.
 '''
 import monai
 import torch
-import torch.nn as nn
 from .network import Network
 from typing import Dict, Any
 from monai.data import DataLoader
-from omegaconf import OmegaConf
 
 
 class unetr(Network):

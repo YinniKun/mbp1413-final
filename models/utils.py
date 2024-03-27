@@ -2,12 +2,16 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:17:54
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-03-14 19:10:11
+LastEditTime: 2024-03-27 01:04:23
 FilePath: /mbp1413-final/models/utils.py
 Description: utility functions for the project
 I Love IU
 Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved. 
 '''
+from pathlib import Path
+from PIL import Image
+import numpy as np
+import matplotlib.pyplot as plt
 import monai
 from monai.data import DataLoader, CacheDataset
 from monai.transforms import (
@@ -29,19 +33,18 @@ import zipfile
 from typing import Tuple, Dict, Any, Sequence, Union
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import numpy as np
-from PIL import Image
-from pathlib import Path
 
 ROOT = Path(os.path.dirname(os.path.realpath(__file__))).parent
+
 
 def download_dataset(cfg: Dict[str, Any]) -> None:
     assert cfg.dataset.url is not None or cfg.dataset.url != "", "Please provide the URL of the dataset"
     shutil.rmtree(os.path.join(ROOT, 'datasets'), ignore_errors=True)
-    gdown.download(url=cfg.dataset.url, output="dataset.zip", quiet=False, fuzzy=True)
+    gdown.download(url=cfg.dataset.url, output="dataset.zip",
+                   quiet=False, fuzzy=True)
     unzip_dataset("dataset.zip", ROOT)
     os.remove("dataset.zip")
+
 
 def define_name(
     model_name: str,
@@ -65,6 +68,7 @@ def define_name(
         ret += "_Norm"
     return ret
 
+
 def make_if_dont_exist(
     folder_path: str,
     overwrite: bool = False
@@ -73,7 +77,7 @@ def make_if_dont_exist(
         if not overwrite:
             pass
         else:
-            shutil.rmtree(folder_path, ignore_errors = True)
+            shutil.rmtree(folder_path, ignore_errors=True)
             os.makedirs(folder_path)
     else:
         os.makedirs(folder_path)
@@ -96,12 +100,14 @@ def DFLoss() -> nn.Module:
     )
     return loss
 
+
 def DiceScore() -> nn.Module:
     score = monai.metrics.DiceHelper(
         include_background=True,
         reduction="mean"
     )
     return score
+
 
 def JaccardLoss() -> nn.Module:
     score = monai.losses.DiceLoss(
@@ -112,12 +118,14 @@ def JaccardLoss() -> nn.Module:
     )
     return score
 
+
 def FullDiceScore() -> nn.Module:
     score = monai.metrics.DiceHelper(
         include_background=True,
         reduction="none"
     )
     return score
+
 
 def FullJaccardLoss() -> nn.Module:
     score = monai.losses.DiceLoss(
@@ -132,20 +140,21 @@ def FullJaccardLoss() -> nn.Module:
 def normalize_image(x):
     if x.ndim <= 2:
         x = x.unsqueeze(0)
-    
+
     if x.shape[0] != 4:
         mean = torch.mean(x, axis=(1, 2), keepdims=True)
         std = torch.std(x, axis=(1, 2), keepdims=True)
         return (x - mean) / std
-    else: 
+    else:
         # only normalize the first 3 channels (RGB)
         ret = torch.zeros(x.shape, dtype=x.dtype, device=x.device)
         temp = x.clone()[:3, ...]
         mean = torch.mean(temp, axis=(1, 2), keepdims=True)
         std = torch.std(temp, axis=(1, 2), keepdims=True)
         ret[:3, ...] = (temp - mean) / std
-        ret[3, ...] = x[3, ...]  
+        ret[3, ...] = x[3, ...]
         return ret
+
 
 def load_dataset(
     train_path: str,
@@ -154,11 +163,11 @@ def load_dataset(
     do_normalization: bool,
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     # create a dic with directory of images and masks
-    train_files = [{"image": img, "label": mask} for img, mask in 
-                   zip(sorted(glob.glob(os.path.join(train_path, "images/*.png"))), 
+    train_files = [{"image": img, "label": mask} for img, mask in
+                   zip(sorted(glob.glob(os.path.join(train_path, "images/*.png"))),
                        sorted(glob.glob(os.path.join(train_path, "masks/*.png"))))]
-    test_files = [{"image": img, "label": mask} for img, mask in 
-                  zip(sorted(glob.glob(os.path.join(test_path, "images/*.png"))), 
+    test_files = [{"image": img, "label": mask} for img, mask in
+                  zip(sorted(glob.glob(os.path.join(test_path, "images/*.png"))),
                       sorted(glob.glob(os.path.join(test_path, "masks/*.png"))))]
     # define transforms
     if do_normalization:
@@ -168,13 +177,16 @@ def load_dataset(
                 # L: Grayscale
                 # RGB: Red, Green, Blue
                 # LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader', converter=lambda image: image.convert("L")), #png files loaded as PIL image
-                LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader'), #png files loaded as PIL image
+                # png files loaded as PIL image
+                LoadImaged(keys=["image", "label"],
+                           image_only=False, reader='PILReader'),
                 # Ensure channel is the first dimension
                 EnsureChannelFirstd(keys=["image", "label"]),
                 # Image Normalization
                 Lambdad(keys=["image"], func=normalize_image),
                 # resize images and masks with scaling
-                Resized(keys=["image", "label"], spatial_size=(512, 512), mode=("linear", "nearest")),
+                Resized(keys=["image", "label"], spatial_size=(
+                    512, 512), mode=("linear", "nearest")),
                 # Scale intensity values of the image within the specified range
                 ScaleIntensityRanged(
                     keys=["image"],
@@ -193,11 +205,14 @@ def load_dataset(
                 # L: Grayscale
                 # RGB: Red, Green, Blue
                 # LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader', converter=lambda image: image.convert("L")), #png files loaded as PIL image
-                LoadImaged(keys=["image", "label"], image_only=False, reader='PILReader'), #png files loaded as PIL image
+                # png files loaded as PIL image
+                LoadImaged(keys=["image", "label"],
+                           image_only=False, reader='PILReader'),
                 # Ensure channel is the first dimension
                 EnsureChannelFirstd(keys=["image", "label"]),
                 # resize images and masks with scaling
-                Resized(keys=["image", "label"], spatial_size=(512, 512), mode=("linear", "nearest")),
+                Resized(keys=["image", "label"], spatial_size=(
+                    512, 512), mode=("linear", "nearest")),
                 # Scale intensity values of the image within the specified range
                 ScaleIntensityRanged(
                     keys=["image"],
@@ -212,35 +227,40 @@ def load_dataset(
     # load datasets
     tran_size = int(0.8 * len(train_files))
     val_size = len(train_files) - tran_size
-    train_data, val_data = torch.utils.data.random_split(train_files, [tran_size, val_size])
+    train_data, val_data = torch.utils.data.random_split(
+        train_files, [tran_size, val_size])
     print(f"Training data size: {len(train_data)}")
     print(f"Validation data size: {len(val_data)}")
 
     tr_loader = DataLoader(
-        CacheDataset(train_data, transform=transforms, cache_num=16, hash_as_key=True),
+        CacheDataset(train_data, transform=transforms,
+                     cache_num=16, hash_as_key=True),
         batch_size=cfg.training.batch_size,
         shuffle=True,
         num_workers=cfg.training.num_workers
     )
     val_loader = DataLoader(
-        CacheDataset(val_data, transform=transforms, cache_num=16, hash_as_key=True),
+        CacheDataset(val_data, transform=transforms,
+                     cache_num=16, hash_as_key=True),
         batch_size=cfg.training.batch_size,
         shuffle=False,
         num_workers=cfg.training.num_workers
     )
     te_loader = DataLoader(
-        CacheDataset(test_files, transform=transforms, cache_num=16, hash_as_key=True),
+        CacheDataset(test_files, transform=transforms,
+                     cache_num=16, hash_as_key=True),
         batch_size=1,
         shuffle=False,
         num_workers=cfg.training.num_workers
     )
-    
+
     return tr_loader, val_loader, te_loader
 
+
 def plot_progress(
-    save_dir: str, 
-    train_losses: Sequence[Sequence[Union[int, float]]], 
-    val_losses: Sequence[Sequence[Union[int, float]]], 
+    save_dir: str,
+    train_losses: Sequence[Sequence[Union[int, float]]],
+    val_losses: Sequence[Sequence[Union[int, float]]],
     dice_scores: Sequence[Sequence[Union[int, float]]],
     iou_scores: Sequence[Sequence[Union[int, float]]],
     name: str
@@ -260,14 +280,18 @@ def plot_progress(
         fig = plt.figure(figsize=(30, 24))
         ax = fig.add_subplot(111)
         ax1 = ax.twinx()
-        ax.plot(train_losses[:,0], train_losses[:,1], color='b', ls='-', label="loss_tr")
+        ax.plot(train_losses[:, 0], train_losses[:, 1],
+                color='b', ls='-', label="loss_tr")
         if len(val_losses) != 0:
             dice_scores = np.array(dice_scores)
             iou_scores = np.array(iou_scores)
             val_losses = np.array(val_losses)
-            ax.plot(val_losses[:, 0], val_losses[:, 1], color='r', ls='-', label="loss_val")
-            ax.plot(dice_scores[:, 0], dice_scores[:, 1], color='g', ls='-', label="dsc_val")
-            ax.plot(iou_scores[:, 0], iou_scores[:, 1], color='purple', ls='-', label="iou_val")
+            ax.plot(val_losses[:, 0], val_losses[:, 1],
+                    color='r', ls='-', label="loss_val")
+            ax.plot(dice_scores[:, 0], dice_scores[:, 1],
+                    color='g', ls='-', label="dsc_val")
+            ax.plot(iou_scores[:, 0], iou_scores[:, 1],
+                    color='purple', ls='-', label="iou_val")
         ax.set_xlabel("epoch")
         ax.set_ylabel("loss")
         ax1.set_ylabel("score")
@@ -278,6 +302,18 @@ def plot_progress(
         plt.close(fig)
     except:
         print(f"failed to plot {name} training progress")
+
+
+def check_device(cfg: Dict[str, Any]) -> torch.device:
+    if cfg.training.device == "cuda" and torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif cfg.training.device == "mps" and torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+
+    return device
+
 
 class PolyLRScheduler(_LRScheduler):
     def __init__(self, optimizer, initial_lr: float, max_steps: int, exponent: float = 0.9, current_step: int = None):
@@ -293,8 +329,9 @@ class PolyLRScheduler(_LRScheduler):
             current_step = self.ctr
             self.ctr += 1
 
-        new_lr = self.initial_lr * (1 - current_step / self.max_steps) ** self.exponent
+        new_lr = self.initial_lr * \
+            (1 - current_step / self.max_steps) ** self.exponent
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = new_lr
-        
-        self._last_lr = [group['lr'] for group in self.optimizer.param_groups] 
+
+        self._last_lr = [group['lr'] for group in self.optimizer.param_groups]
