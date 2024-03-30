@@ -29,7 +29,7 @@ training:
   save_dir: ""
   val_period: 5
   num_workers: 8
-  device: "mps"
+  device: "cuda"
 
 inference:
   model_dir: ""
