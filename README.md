@@ -9,7 +9,7 @@ For details of the findings, please refer to the report (named `final-report.pdf
 ## Data Availability
 The data used to train the models, as well as the unprocessed results (such as loss curves, model validation results, etc.) of this project can be found [at this Google Drive](https://drive.google.com/drive/folders/1Gf1jCM_4Zove3mqOsA3wmld1ZJUHG08A?usp=sharing)
 
-## Environment Installation
+## Environment Installation (tested on Ubuntu 22.04)
 ```bash
 git clone https://github.com/YinniKun/mbp1413-final.git && cd mbp1413-final
 conda-env create -f environment.yml
