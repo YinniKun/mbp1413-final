@@ -227,7 +227,7 @@ class Network(nn.Module):
                 self.model.parameters(), lr=self.lr, weight_decay=3e-5, momentum=0.99, nesterov=True)
         else:
             self.optimizer = getattr(torch.optim, "Adam")(
-                self.model.parameters(), lr=self.lr)
+                self.model.parameters(), lr=self.lr, weight_decay=3e-5)
         if self.use_sche:
             # ! Adapt learning scheduler from nnUnet-v2
             self.lr_scheduler = PolyLRScheduler(
