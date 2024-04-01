@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-03-31 23:15:48
+LastEditTime: 2024-04-01 13:32:18
 FilePath: /mbp1413-final/models/unet.py
 Description: U-Net model for medical image segmentation
 I Love IU
@@ -12,7 +12,7 @@ import monai
 import torch
 from monai.data import DataLoader
 from .network import Network
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 
 class unet(Network):

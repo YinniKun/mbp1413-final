@@ -306,9 +306,6 @@ class Network(nn.Module):
         x = next(iter(self.tr_loader))["image"][[0]]
         y = self.model(x.to(self.device))
         if mode == 'train':
-        # make_dot(y.mean(), params=dict(self.model.named_parameters()), show_attrs=True, show_saved=True).render(
-        #     filename="network", directory=self.training_dir, format="png"
-        # )
             save_dir = self.training_dir
         else:
             save_dir = self.inference_dir
