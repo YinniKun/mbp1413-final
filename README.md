@@ -54,6 +54,7 @@ python main.py
 -mo unetr # the model to be trained/tested, default is unet
 -sch # flag for using lr_scheduler
 -opt SGD # deafult is Adam, can be SGD or Adam
+-s # flag for saving the model architecture plot
 ```
 Detailed information can be shown using ```-h```\
 To run on Compute Canada, use:
