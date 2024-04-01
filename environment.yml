@@ -80,6 +80,7 @@ dependencies:
       - stack-data==0.6.3
       - sympy==1.12
       - torch==2.2.0
+      - torchviz==0.0.2
       - tornado==6.4
       - tqdm==4.66.2
       - traitlets==5.14.1

@@ -1,3 +1,13 @@
+<!--
+ * @Author: Chris Xiao yl.xiao@mail.utoronto.ca
+ * @Date: 2024-03-31 01:14:18
+ * @LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
+ * @LastEditTime: 2024-03-31 22:30:53
+ * @FilePath: /mbp1413-final/README.md
+ * @Description: README file for the final project of MBP1413 Winter 2024
+ * I Love IU
+ * Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved. 
+-->
 # Evaluating and Optimizing Training and Interference Performances Between Variations of UNET Models for Nuclei Detection and Segmentation
 This is the repo for the final project of MBP1413 Winter 2024, by Richard, Sylvia, and Chris. 
 
@@ -10,8 +20,23 @@ For details of the findings, please refer to the report (named `final-report.pdf
 The data used to train the models, as well as the unprocessed results (such as loss curves, model validation results, etc.) of this project can be found [at this Google Drive](https://drive.google.com/drive/folders/1Gf1jCM_4Zove3mqOsA3wmld1ZJUHG08A?usp=sharing)
 
 ## Environment Installation (tested on Ubuntu 22.04)
+### Prerequisites
+For Mac Users
 ```bash
-git clone https://github.com/YinniKun/mbp1413-final.git && cd mbp1413-final
+brew install graphviz
+```
+For Debian System Users (Ubuntu, etc.)
+```bash
+sudo apt install graphviz
+```
+For Redhat System Users (CentOS, Fedora, etc.)
+```bash
+sudo yum install graphviz
+```
+### Conda Environment Setup
+```bash
+git clone https://github.com/YinniKun/mbp1413-final.git
+cd mbp1413-final
 conda-env create -f environment.yml
 conda activate monai
 ```

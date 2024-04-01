@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 14:52:45
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-03-27 03:11:02
+LastEditTime: 2024-03-31 23:16:02
 FilePath: /mbp1413-final/models/network.py
 Description: base network class for the project
 I Love IU
@@ -11,6 +11,7 @@ Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved.
 
 import torch
 import torch.nn as nn
+from torchviz import make_dot
 from .utils import *
 from typing import Dict, Any, Tuple, List
 import monai
@@ -37,7 +38,7 @@ class Network(nn.Module):
         use_sche: bool,
         tr_loader: DataLoader,
         val_loader: DataLoader,
-        te_loader: DataLoader,
+        te_loader: DataLoader
     ) -> None:
         super(Network, self).__init__()
         self.cfg = cfg
@@ -59,14 +60,12 @@ class Network(nn.Module):
 
         self.weights_dir = os.path.join(self.training_dir, 'weights')
         self.plots_dir = os.path.join(self.training_dir, 'plots')
-
         # Inference save dirs
         test_folder_name = define_name(
             name, lr, epoch, optimizer, use_sche, 'test')
         self.inference_dir = os.path.join(ROOT, test_folder_name)
         if self.cfg.inference.predict_dir != "":
-            self.inference_model_dir = self.cfg.inference.predict_dir
-        self.inference_model_dir = os.path.join(self.inference_dir, name)
+            self.inference_dir = self.cfg.inference.predict_dir
 
     def init_model(self) -> None:
         pass
@@ -80,7 +79,6 @@ class Network(nn.Module):
     def init_inference_dir(self) -> None:
         # Create save directory
         make_if_dont_exist(self.inference_dir, overwrite=True)
-        make_if_dont_exist(self.inference_model_dir, overwrite=True)
 
     def train(self) -> None:
         for epoch in range(self.start_epoch, self.max_epoch):
@@ -300,3 +298,25 @@ class Network(nn.Module):
                     "valid_iou": self.ious
                 }, save_path
             )
+
+    def plot_architecture(
+        self, 
+        mode: str
+    ) -> None:
+        x = next(iter(self.tr_loader))["image"][[0]]
+        y = self.model(x.to(self.device))
+        if mode == 'train':
+        # make_dot(y.mean(), params=dict(self.model.named_parameters()), show_attrs=True, show_saved=True).render(
+        #     filename="network", directory=self.training_dir, format="png"
+        # )
+            save_dir = self.training_dir
+        else:
+            save_dir = self.inference_dir
+        
+        make_dot(y.mean(), params=dict(self.model.named_parameters()), show_attrs=True, show_saved=True).render(
+            filename="network", directory=save_dir, format="png"
+        )
+
+        
+        
+        

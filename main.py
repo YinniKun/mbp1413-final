@@ -2,7 +2,7 @@
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
 Date: 2024-02-15 16:24:56
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-03-27 02:59:48
+LastEditTime: 2024-03-31 23:17:31
 FilePath: /mbp1413-final/main.py
 Description: main script for the project
 I Love IU
@@ -45,6 +45,8 @@ def parse_command() -> argparse.Namespace:
                         default="Adam", help="Optimizer of model, default is Adam")
     parser.add_argument("-sch", "--scheduler", action="store_true",
                         help="Use this parameter to use lr scheduler")
+    parser.add_argument("-s", "--save", action="store_true",
+                        help="Use this if you want to save the architecture plot")
     return parser.parse_args()
 
 
@@ -72,15 +74,22 @@ def main() -> None:
             model.load_checkpoint(mode="last")
         else:
             model.init_training_dir()
+        
+        if args.save:
+            model.plot_architecture(mode='train')
+
         model.train()
         print(f"Training completed for {args.model}")
     elif args.mode == "test":
         print(f"Testing {args.model}")
         model.init_inference_dir()
+        if args.save:
+            model.plot_architecture(mode='test')
         model.test()
         print(f"Testing completed for {args.model}")
     else:
         raise ValueError("mode not supported")
+    
 
 
 if __name__ == "__main__":
