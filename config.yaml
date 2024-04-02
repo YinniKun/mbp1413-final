@@ -1,4 +1,4 @@
-experiment: 
+experiment:
   name: "Automated Nuclei Detection and Segmentation"
   description: "Evaluating Performance Between Variation of UNet Models for Nuclei Detection and Segmentation"
   date: "2024-03-15"
@@ -34,4 +34,3 @@ training:
 inference:
   model_dir: ""
   predict_dir: ""
-

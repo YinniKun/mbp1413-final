@@ -12,7 +12,7 @@ Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved.
 from omegaconf import OmegaConf
 import argparse
 import os
-from models import download_dataset, load_dataset, check_device, unetr, unet
+from models import load_dataset, check_device, download_dataset, unet, unetr
 from pathlib import Path
 
 ROOT = Path(os.path.dirname(os.path.realpath(__file__)))
@@ -71,8 +71,8 @@ def parse_command() -> argparse.Namespace:
         help="Use this parameter to use lr scheduler",
     )
     parser.add_argument(
-        "-s",
-        "--save",
+        "-sa",
+        "--save-arch",
         action="store_true",
         help="Use this if you want to save the architecture plot",
     )
@@ -113,7 +113,7 @@ def main() -> None:
         else:
             model.init_training_dir()
 
-        if args.save:
+        if args.save_arch:
             model.plot_architecture(mode="train")
 
         model.train()
@@ -121,8 +121,9 @@ def main() -> None:
     elif args.mode == "test":
         print(f"Testing {args.model}")
         model.init_inference_dir()
-        if args.save:
+        if args.save_arch:
             model.plot_architecture(mode="test")
+
         model.test()
         print(f"Testing completed for {args.model}")
     else:

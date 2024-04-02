@@ -1,16 +1,18 @@
-'''
+"""
 Author: Chris Xiao yl.xiao@mail.utoronto.ca
-Date: 2024-02-15 14:52:58
+Date: 2024-04-02 00:37:26
 LastEditors: Chris Xiao yl.xiao@mail.utoronto.ca
-LastEditTime: 2024-04-01 13:26:26
+LastEditTime: 2024-04-02 00:40:52
 FilePath: /mbp1413-final/models/unetr.py
-Description: transformer-based U-Net model for medical image segmentation
+Description: UNetr model
 I Love IU
-Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved. 
-'''
+Copyright (c) 2024 by Chris Xiao yl.xiao@mail.utoronto.ca, All Rights Reserved.
+"""
+
+__all__ = ["unetr"]
 import monai
 import torch
-from .network import Network
+from models.network import Network
 from typing import Dict, Any
 from monai.data import DataLoader
 
@@ -27,11 +29,20 @@ class unetr(Network):
         use_sche: bool,
         tr_loader: DataLoader,
         val_loader: DataLoader,
-        te_loader: DataLoader
+        te_loader: DataLoader,
     ) -> None:
-        super(unetr, self).__init__(cfg, lr, epoch, device, name,
-                                    optimizer, use_sche,
-                                    tr_loader, val_loader, te_loader)
+        super(unetr, self).__init__(
+            cfg,
+            lr,
+            epoch,
+            device,
+            name,
+            optimizer,
+            use_sche,
+            tr_loader,
+            val_loader,
+            te_loader,
+        )
         self.init_model()
         self.init_params()
 
