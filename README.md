@@ -16,7 +16,7 @@ This is the repo for the final project of MBP1413 Winter 2024, by Richard, Sylvi
 
 In this project, we looked at the performance between different models of UNet (specifically, UNET and UNETR) for general nuclei segmentation from various imaging modalities and tried to optimize the model performances with various data processing methods and hyperparameter tuning.
 
-For details of the findings, please refer to the report (named `final-report.pdf`) and the presentation (named `final-presentation.pdf`) for this project in this repo. The codes used to generate the results used in the report and presentation are also found in this repo.
+For details of the findings, please refer to the report (named `final-report.pdf`) and the presentation (named `final-presentation.pdf`) for this project in this ```/documents```. The codes used to generate the results used in the report and presentation are also found in this repo.
 
 ## Data Availability
 
